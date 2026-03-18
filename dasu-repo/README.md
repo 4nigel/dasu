@@ -2,18 +2,15 @@
 
 **出す** *(dasu)* — Japanese: *to output / to print*
 
-A free, open-source browser-based sheet layout tool built for the [Bonsai BIM](https://bonsaibim.org) / [IfcOpenShell](https://ifcopenshell.org) ecosystem.
-
-> Developed independently for the benefit of the OSArch and Bonsai communities.  
-> Not affiliated with, endorsed by, or a product of either community.
+A free, open-source browser-based sheet layout tool built for people who love and support Free and Open Sosurce Software
 
 ---
 
 ## What is it?
 
-Dasu is a single HTML file that runs entirely in your browser — no install, no server, no subscription. Open it in Chrome or Edge and it works.
+Dasu is a single HTML file that runs entirely in your browser — no install, no server, no subscription, no upsetting your IT Security crew. Open it in Chrome or Edge and it works.
 
-The goal is to bridge the gap between IFC-based BIM authoring in Blender/Bonsai BIM and the production of print-ready drawing sheets. Drawings produced by Bonsai's `bim.create_drawing` operator are composed on sheets, annotated, and exported as PDF or SVG — entirely within the browser.
+The goal is to bridge the gap between IFC-based BIM authoring in Blender/Bonsai BIM and the production of easy print-ready drawings composed on sheets, annotated, and exported as PDF or SVG — entirely within the browser.
 
 ![Dasu screenshot placeholder](docs/screenshot.png)
 
