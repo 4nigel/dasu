@@ -2,7 +2,7 @@
 
 **出す** *(dasu)* — Japanese: *to output / to print*
 
-A free, open-source browser-based sheet layout tool built for people who love and support Free and Open Sosurce Software
+A free, open-source browser-based sheet layout tool built for people who love and support Free and Open Source Software
 
 ---
 
