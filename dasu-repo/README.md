@@ -12,6 +12,7 @@ Dasu is a single HTML file that runs entirely in your browser — no install, no
 
 The goal is to bridge the gap between IFC-based BIM authoring in Blender/Bonsai BIM and the production of easy print-ready drawings composed on sheets, annotated, and exported as PDF or SVG — entirely within the browser.
 
+
 ![Dasu screenshot placeholder](docs/screenshot.png)
 
 ---
