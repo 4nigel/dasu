@@ -4,14 +4,14 @@
 
 A free, open-source browser-based sheet layout tool built for the [Bonsai BIM](https://bonsaibim.org) / [IfcOpenShell](https://ifcopenshell.org) ecosystem — and anyone else who needs to compose print-ready drawing sheets without proprietary software.
 
-> Developed independently for the benefit of the OSArch and Bonsai communities.
+> Developed independently for the benefit of the OSArch and Bonsai communities and everyone else.
 > Not affiliated with, endorsed by, or a product of either community but would like to be that cool.
 
 ---
 
 ## What is it?
 
-Dasu is a **single HTML file** that runs entirely in your browser. No install. No subscription. No cloud. No vendor lock-in. Open it in Chrome or Edge and it works — on a home PC, a locked-down government machine, a borrowed laptop.
+Dasu is a **single HTML file** that runs entirely in your browser. No install. No subscription. No cloud. No vendor lock-in. Open it in Chrome or Edge (other browsers have not been tested) and it works — on a home PC, a locked-down government machine, a borrowed laptop or your phone.
 
 ---
 
@@ -41,13 +41,13 @@ python bridge/dasu_bridge.py
 - **SVG** — drag-drop or file picker (Inkscape SVGs fully supported)
 - **PNG / JPG** — drag-drop or file picker
 - **PDF** — page picker with 1×–4× render resolution
-- **DXF** — converted via bridge server (ezdxf)
-- **Bonsai BIM** — live push from Blender N-panel via bridge
+- **DXF** — converted via bridge server (ezdxf, work in progress)
+- **Bonsai BIM** — live push from Blender N-panel via bridge (work in progress)
 
 ### Bonsai SVG Intelligence
 - Auto-reads `data-scale` — scale field pre-populated on import
 - Detects `xmlns:ifc=` namespace
-- **Style Manager** — edit CSS classes (IfcWall, PredefinedType-LINEWORK etc.) per drawing. Presets: NZ Drawing Standard, Greyscale Print, Colour by Class. Preserve white fills option keeps text/marker backgrounds intact.
+- **Style Manager** — edit CSS classes (IfcWall, PredefinedType-LINEWORK etc.) per drawing. Presets:Regional Drawing Standard, Greyscale Print, Colour by Class. Preserve white fills option keeps text/marker backgrounds intact.
 
 ### Element Panel
 - Position, size (mm), **scale label drives resize** (centre-anchored, reversible, 10× warning)
@@ -61,7 +61,7 @@ python bridge/dasu_bridge.py
 - Smart guides, ortho lock (Ctrl), angle snap (Shift)
 - Arrow key nudge
 
-### Annotation Tools
+### Annotation Tools (not trying to be a CAD app)
 - Line, Polyline/Polygon, Rectangle, Circle/Ellipse, Arrow/Leader
 - **Dimension** — three-click workflow, H/V/A modes, live rubber-band, scale-aware
 - Text — formatting, background box, revision cloud border
