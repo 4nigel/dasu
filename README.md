@@ -26,7 +26,9 @@ For DXF import and Bonsai BIM live connection, also run the bridge server:
 ```
 python bridge/dasu_bridge.py
 ```
-
+## Terminology 
+- Elements: external stuff that has been placed on drawing sheets. Elements can be SVG, PNG, JPG, PDF, DXF (work in progress)
+- Objects: internal things like Annotations, lines,circles, polygons, text and dimensions 
 ---
 
 ## Features
