@@ -24,7 +24,8 @@ The goal is to bridge the gap between IFC-based BIM authoring in Blender/Bonsai 
 3. Choose a template from the Start dialog
 4. Drag SVG, PNG, JPG, or PDF files onto the sheet
 
-For DXF import and Bonsai BIM live connection, also run the bridge server:
+Bonsai BIM connection is in progress
+DXF is in progress 
 ```
 python bridge/dasu_bridge.py
 ```
