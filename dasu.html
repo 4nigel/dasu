@@ -833,10 +833,10 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
 
   <!-- Element list panel — outside toolbar to avoid overflow clipping -->
   <div id="el-list-panel" style="
-    display:none;position:fixed;top:80px;right:12px;
+    display:none;position:fixed;
     background:var(--surf);border:1px solid var(--bdr);border-radius:8px;
     box-shadow:0 8px 32px rgba(0,0,0,0.5);min-width:280px;max-width:360px;
-    max-height:420px;overflow-y:auto;z-index:9000;padding:6px 0">
+    max-height:420px;overflow-y:auto;z-index:9000;padding:4px 0">
   </div>
 
   <!-- Body -->
@@ -2729,20 +2729,20 @@ function _elIcon(o) {
 }
 
 function buildElList() {
-  const panel = document.getElementById('el-list-panel');
-  const objs  = canvas.getObjects().filter(o => !o._isSheetRect && !o._isDimPreview);
+  const panel      = document.getElementById('el-list-panel');
+  const allObjs    = canvas.getObjects();
+  const objs       = allObjs.filter(o => !o._isSheetRect && !o._isDimPreview);
 
   if (!objs.length) {
     panel.innerHTML = '<div style="padding:12px;font-size:12px;color:var(--txt2)">No elements on this sheet.</div>';
     return;
   }
 
-  // Reverse so top-of-stack is first
-  const list = [...objs].reverse();
+  const list   = [...objs].reverse();
   const active = canvas.getActiveObject();
 
-  panel.innerHTML = list.map((o, i) => {
-    const idx      = objs.indexOf(o);
+  panel.innerHTML = list.map(o => {
+    const idx      = allObjs.indexOf(o);   // real canvas index, not filtered index
     const label    = _elLabel(o);
     const icon     = _elIcon(o);
     const locked   = o._locked   || false;
@@ -2783,6 +2783,10 @@ function toggleElList() {
     btn.classList.remove('on');
   } else {
     buildElList();
+    // Position panel directly under the button
+    const rect = btn.getBoundingClientRect();
+    panel.style.top   = (rect.bottom + 4) + 'px';
+    panel.style.right = (window.innerWidth - rect.right) + 'px';
     panel.style.display = '';
     btn.classList.add('on');
   }
@@ -2811,19 +2815,18 @@ function elListToggleHide(e, idx) {
   o.setCoords();
   canvas.renderAll();
   canvas.requestRenderAll();
-  buildElList();
+  setTimeout(buildElList, 0);   // defer so panel.contains(e.target) stays valid
 }
 
 function elListToggleLock(e, idx) {
   e.stopPropagation();
   const o = canvas.getObjects()[idx];
   if (!o || o._isSheetRect) return;
-  // Reuse existing toggleLock logic
   const locked = !o._locked;
   o._locked = locked;
   if (locked) {
     o.selectable = false;
-    o.evented    = true;   // stay evented for unlock click
+    o.evented    = true;
     canvas.discardActiveObject();
   } else {
     o.selectable = true;
@@ -2831,7 +2834,7 @@ function elListToggleLock(e, idx) {
   }
   canvas.renderAll();
   canvas.requestRenderAll();
-  buildElList();
+  setTimeout(buildElList, 0);   // defer so panel.contains(e.target) stays valid
 }
 
 // Close element list on outside click
