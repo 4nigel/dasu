@@ -168,7 +168,7 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
 .modal-hdr h2 { font-size: 15px; font-weight: 500; }
 .modal-close { background: none; border: none; color: var(--txt2); font-size: 20px; cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 4px; }
 .modal-close:hover { color: var(--txt); background: var(--surf2); }
-.modal-body { padding: 18px; overflow-y: auto; max-height: 70vh; }
+.modal-body { padding: 18px; overflow-y: auto; overflow-x: hidden; max-height: 70vh; }
 .modal-footer { padding: 12px 18px; border-top: 1px solid var(--bdr); display: flex; justify-content: flex-end; gap: 8px; }
 .m-btn { padding: 7px 18px; border-radius: 6px; font-size: 13px; font-family: var(--sans); cursor: pointer; border: 1px solid var(--bdr); background: var(--surf2); color: var(--txt); transition: all 0.12s; }
 .m-btn:hover { border-color: var(--accent); color: var(--accent); }
@@ -178,11 +178,12 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
 /* ── Preferences ── */
 .pref-sec { margin-bottom: 18px; }
 .pref-sec-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--txt2); margin-bottom: 10px; }
-.pref-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--bdr); gap: 12px; }
+.pref-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--bdr); gap: 12px; min-width: 0; }
 .pref-row:last-child { border-bottom: none; }
 .pref-row-lbl { font-size: 13px; color: var(--txt); }
 .pref-row-sub { font-size: 11px; color: var(--txt2); margin-top: 2px; }
-.pref-ctrl { flex-shrink: 0; }
+.pref-ctrl { flex-shrink: 0; display: flex; align-items: center; }
+.pref-row > div:first-child { flex: 1; min-width: 0; overflow: hidden; }
 .pref-sel { background: var(--surf2); border: 1px solid var(--bdr); color: var(--txt); padding: 4px 8px; border-radius: 5px; font-size: 12px; font-family: var(--sans); }
 .pref-sel:focus { outline: 1px solid var(--accent); }
 .pref-inp { background: var(--surf2); border: 1px solid var(--bdr); color: var(--txt); padding: 4px 8px; border-radius: 5px; font-size: 12px; font-family: var(--mono); width: 70px; text-align: right; }
@@ -529,19 +530,21 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
         <div class="about-logo">
           <div class="name">Dasu<em>.</em>print</div>
           <div><span class="about-badge">ALPHA</span></div>
-          <div class="about-ver">Version 0.2.0-alpha &nbsp;·&nbsp; Build 2025 &nbsp;·&nbsp; Dasu (出す)</div>
+          <div class="about-ver" id="about-ver">Version 0.4.0-alpha &nbsp;·&nbsp; 出す &nbsp;·&nbsp; to output / to print</div>
         </div>
         <div class="about-body">
-          <p>A free, open-source browser-based sheet layout tool — compose drawings from <a href="https://bonsaibim.org" target="_blank">Bonsai BIM</a>, SVG views, and images into print-ready sheets without leaving the browser.</p>
+          <p>A free, open-source browser-based drawing sheet layout tool. Compose drawings from <a href="https://bonsaibim.org" target="_blank">Bonsai BIM</a>, DXF, PDF, SVG, and images into print-ready sheets — entirely in the browser. No install, no subscription, no cloud.</p>
           <br>
-          <p>Developed independently for the benefit of the <a href="https://osarch.org" target="_blank">OSArch</a> and Bonsai communities. Not an official product of either community.</p>
+          <p>Includes a <strong>Bonsai SVG Style Manager</strong> for controlling lineweights and colours per IFC class, scale-aware dimensioning, multi-sheet management, and a local bridge server for live drawing push from Blender.</p>
           <br>
-          <p>Built on <a href="https://fabricjs.com" target="_blank">Fabric.js</a> (MIT) and <a href="https://parall.ax/products/jspdf" target="_blank">jsPDF</a> (MIT), works with <a href="https://ifcopenshell.org" target="_blank">IfcOpenShell</a>.</p>
+          <p>Developed independently for the benefit of the <a href="https://community.osarch.org" target="_blank">OSArch</a> and Bonsai communities. Not affiliated with, endorsed by, or a product of either community.</p>
+          <br>
+          <p style="font-size:11px">Built on <a href="https://fabricjs.com" target="_blank">Fabric.js</a> (MIT) · <a href="https://parall.ax/products/jspdf" target="_blank">jsPDF</a> (MIT) · <a href="https://mozilla.github.io/pdf.js/" target="_blank">PDF.js</a> (Apache 2.0) · <a href="https://ezdxf.readthedocs.io" target="_blank">ezdxf</a> (MIT)</p>
           <div class="about-links">
-            <a class="about-link" href="https://github.com/IfcOpenShell/IfcOpenShell" target="_blank">GitHub</a>
+            <a class="about-link" href="https://github.com/4nigel/dasu" target="_blank">GitHub</a>
             <a class="about-link" href="https://bonsaibim.org" target="_blank">Bonsai BIM</a>
             <a class="about-link" href="https://ifcopenshell.org" target="_blank">IfcOpenShell</a>
-            <a class="about-link" href="https://osarch.org" target="_blank">OSArch</a>
+            <a class="about-link" href="https://community.osarch.org" target="_blank">OSArch</a>
           </div>
         </div>
       </div>
@@ -719,6 +722,8 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
   <!-- hidden DXF file input -->
   <input type="file" id="dxf-file-in" style="display:none" accept=".dxf"
     onchange="onDxfFileSelected(this)">
+  <!-- hidden Asset import file input -->
+  <input type="file" id="asset-import-in" style="display:none" accept=".svg" multiple>
 
   <!-- ── Bridge modal ── -->
   <div class="modal-overlay" id="modal-bridge" onclick="closeOnOverlay(event,'modal-bridge')">
@@ -814,9 +819,9 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
       <option value="25">25 mm</option>
     </select>
     <div class="tsep"></div>
-    <button class="tb-btn" onclick="addTitleBlock()">+ Title Block</button>
-    <button class="tb-btn" onclick="addNorth()">⊕ North</button>
-    <button class="tb-btn" onclick="addScaleBar()">┤├ Scale Bar</button>
+    <button class="tb-btn" id="assets-btn" onclick="toggleAssetsPanel()" title="Insert assets onto sheet">
+      ✱ Assets
+    </button>
     <div class="tsep"></div>
     <span class="tb-lbl">DimStyle</span>
     <select class="tb-sel" id="dimstyle-sel" onchange="applyDimStyle(this.value)" style="max-width:120px">
@@ -826,12 +831,235 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
     <div class="tsep"></div>
     <button class="tb-btn" onclick="forceRefresh()" title="Force canvas redraw (R)">↺ Refresh</button>
     <div class="tsep"></div>
-    <button class="tb-btn" id="el-list-btn" onclick="toggleElList()" title="Element list">
-      ☰ Elements
+    <button class="tb-btn" id="el-list-btn" onclick="toggleElList()" title="Sheet contents — all objects on this sheet">
+      ☰ Contents
     </button>
   </div>
 
-  <!-- Element list panel — outside toolbar to avoid overflow clipping -->
+  <!-- Sheet Properties Modal -->
+  <div class="modal-overlay" id="modal-sheet-props" onclick="closeOnOverlay(event,'modal-sheet-props')">
+    <div class="modal wide">
+      <div class="modal-hdr">
+        <h2>Sheet Properties</h2>
+        <button class="modal-close" onclick="closeModal('modal-sheet-props')">×</button>
+      </div>
+      <div class="modal-body">
+
+        <div style="font-size:11px;color:var(--txt2);margin-bottom:14px">
+          These fields populate the title block automatically. Leave blank to show TBC.
+        </div>
+
+        <!-- Sheet identity -->
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;
+          letter-spacing:0.08em;color:var(--txt2);margin-bottom:8px">Sheet Identity</div>
+
+        <div class="pref-row">
+          <div><div class="pref-row-lbl">Sheet name</div>
+          <div class="pref-row-sub">Shown on title block and tab</div></div>
+          <div class="pref-ctrl">
+            <input class="pref-inp" id="sp-name" type="text" style="width:200px"
+              placeholder="e.g. Ground Floor Plan">
+          </div>
+        </div>
+        <div class="pref-row">
+          <div><div class="pref-row-lbl">Sheet number / ID</div>
+          <div class="pref-row-sub">e.g. A-001</div></div>
+          <div class="pref-ctrl">
+            <input class="pref-inp" id="sp-id" type="text" style="width:120px"
+              placeholder="e.g. A-001">
+          </div>
+        </div>
+        <div class="pref-row">
+          <div><div class="pref-row-lbl">Description</div>
+          <div class="pref-row-sub">Brief content description</div></div>
+          <div class="pref-ctrl">
+            <input class="pref-inp" id="sp-description" type="text" style="width:200px"
+              placeholder="e.g. Floor plan showing...">
+          </div>
+        </div>
+        <div class="pref-row">
+          <div><div class="pref-row-lbl">Scale</div>
+          <div class="pref-row-sub">Override auto-detected scale</div></div>
+          <div class="pref-ctrl">
+            <input class="pref-inp" id="sp-scale" type="text" style="width:100px"
+              placeholder="e.g. 1:100">
+          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;
+          letter-spacing:0.08em;color:var(--txt2);margin:16px 0 8px">Issue Status</div>
+
+        <div class="pref-row">
+          <div><div class="pref-row-lbl">Status</div></div>
+          <div class="pref-ctrl">
+            <select class="pref-inp" id="sp-status" style="width:180px">
+              <option value="DRAFT">DRAFT</option>
+              <option value="FOR REVIEW">FOR REVIEW</option>
+              <option value="FOR CONSENT">FOR CONSENT</option>
+              <option value="FOR CONSTRUCTION">FOR CONSTRUCTION</option>
+              <option value="AS-BUILT">AS-BUILT</option>
+              <option value="SUPERSEDED">SUPERSEDED</option>
+            </select>
+          </div>
+        </div>
+        <div class="pref-row">
+          <div><div class="pref-row-lbl">Revision</div>
+          <div class="pref-row-sub">e.g. A, B, C or 01, 02</div></div>
+          <div class="pref-ctrl">
+            <input class="pref-inp" id="sp-revision" type="text" style="width:80px"
+              placeholder="e.g. A">
+          </div>
+        </div>
+        <div class="pref-row">
+          <div><div class="pref-row-lbl">Issue date</div></div>
+          <div class="pref-ctrl">
+            <input class="pref-inp" id="sp-issuedate" type="date" style="width:150px">
+          </div>
+        </div>
+        <div class="pref-row">
+          <div><div class="pref-row-lbl">Purpose</div>
+          <div class="pref-row-sub">e.g. Consent, Construction, As-built</div></div>
+          <div class="pref-ctrl">
+            <input class="pref-inp" id="sp-purpose" type="text" style="width:160px"
+              placeholder="e.g. Construction">
+          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;
+          letter-spacing:0.08em;color:var(--txt2);margin:16px 0 8px">People</div>
+
+        <div class="pref-row">
+          <div><div class="pref-row-lbl">Drawn by</div></div>
+          <div class="pref-ctrl">
+            <input class="pref-inp" id="sp-drawnby" type="text" style="width:160px"
+              placeholder="Name or initials">
+          </div>
+        </div>
+        <div class="pref-row">
+          <div><div class="pref-row-lbl">Checked by</div></div>
+          <div class="pref-ctrl">
+            <input class="pref-inp" id="sp-checkedby" type="text" style="width:160px"
+              placeholder="Name or initials">
+          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;
+          letter-spacing:0.08em;color:var(--txt2);margin:16px 0 8px">Classification</div>
+
+        <div class="pref-row">
+          <div><div class="pref-row-lbl">Discipline</div></div>
+          <div class="pref-ctrl">
+            <select class="pref-inp" id="sp-discipline" style="width:180px">
+              <option value="">— not set —</option>
+              <option value="Architecture">Architecture</option>
+              <option value="Structure">Structure</option>
+              <option value="Services">Services</option>
+              <option value="Civil">Civil</option>
+              <option value="Landscape">Landscape</option>
+              <option value="Interior">Interior</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="m-btn" onclick="closeModal('modal-sheet-props')">Cancel</button>
+        <button class="m-btn primary" onclick="applySheetProperties()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Asset Library Modal -->
+  <div class="modal-overlay" id="modal-assets" onclick="closeOnOverlay(event,'modal-assets')">
+    <div class="modal wide">
+      <div class="modal-hdr">
+        <h2>Asset Library</h2>
+        <button class="modal-close" onclick="closeModal('modal-assets')">×</button>
+      </div>
+      <div class="modal-body">
+
+        <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
+          <button class="m-btn primary" onclick="document.getElementById('asset-import-in').click()">
+            ⬡ Import SVG Asset…
+          </button>
+          <span style="font-size:11px;color:var(--txt2)">SVG files only · stored locally in your browser</span>
+        </div>
+
+        <!-- Category filter tabs -->
+        <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap" id="asset-cat-tabs">
+          <button class="fill-tab on" onclick="filterAssets('all',this)">All</button>
+          <button class="fill-tab" onclick="filterAssets('titleblock',this)">Title Blocks</button>
+          <button class="fill-tab" onclick="filterAssets('symbol',this)">Symbols</button>
+          <button class="fill-tab" onclick="filterAssets('detail',this)">Details</button>
+          <button class="fill-tab" onclick="filterAssets('custom',this)">Custom</button>
+        </div>
+
+        <!-- Asset grid -->
+        <div id="asset-grid" style="
+          display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+          gap:10px;min-height:120px">
+          <div style="color:var(--txt2);font-size:12px;grid-column:1/-1;padding:20px 0;text-align:center">
+            Loading assets…
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="m-btn" onclick="closeModal('modal-assets')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assets panel — fixed position to avoid toolbar overflow clipping -->
+  <div id="assets-panel" style="
+    display:none;position:fixed;
+    background:var(--surf);border:1px solid var(--bdr);border-radius:8px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.5);min-width:220px;
+    z-index:9000;padding:4px 0">
+
+    <div style="padding:6px 12px 4px;font-size:10px;font-weight:600;
+      text-transform:uppercase;letter-spacing:0.08em;color:var(--txt2)">Sheet Assets</div>
+
+    <div class="dd-item" onclick="assetsInsert('titleblock')">
+      <span>⊞</span><span style="margin-left:8px">Title Block</span>
+    </div>
+    <div class="dd-item" onclick="assetsInsert('north')">
+      <span>⊕</span><span style="margin-left:8px">North Point</span>
+    </div>
+    <div class="dd-item" onclick="assetsInsert('scalebar')">
+      <span>┤├</span><span style="margin-left:8px">Scale Bar</span>
+    </div>
+
+    <div class="dd-sep"></div>
+    <div style="padding:4px 12px;font-size:10px;font-weight:600;
+      text-transform:uppercase;letter-spacing:0.08em;color:var(--txt2)">Annotation</div>
+
+    <div class="dd-item" onclick="assetsInsert('text')">
+      <span>T</span><span style="margin-left:8px">Text</span>
+    </div>
+    <div class="dd-item" onclick="assetsInsert('dim')">
+      <span>↔</span><span style="margin-left:8px">Dimension</span>
+    </div>
+    <div class="dd-item" onclick="assetsInsert('arrow')">
+      <span>→</span><span style="margin-left:8px">Arrow / Leader</span>
+    </div>
+
+    <div class="dd-sep"></div>
+    <div style="padding:4px 12px;font-size:10px;font-weight:600;
+      text-transform:uppercase;letter-spacing:0.08em;color:var(--txt2)">User Library</div>
+    <div id="assets-user-list">
+      <div style="padding:4px 12px 6px;font-size:11px;color:var(--txt2);font-style:italic">
+        No saved assets yet
+      </div>
+    </div>
+
+    <div class="dd-sep"></div>
+    <div class="dd-item" onclick="_closeAssetsPanel();openModal('modal-assets');loadAssetLibrary()">
+      ⚙ Manage Library…
+    </div>
+  </div>
+
+  <!-- Contents panel — outside toolbar to avoid overflow clipping -->
   <div id="el-list-panel" style="
     display:none;position:fixed;
     background:var(--surf);border:1px solid var(--bdr);border-radius:8px;
@@ -1063,6 +1291,21 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
             <input class="p-inp" id="el-stroke-w" type="number" value="0.5" min="0" step="0.1" onchange="applyStroke()">
             <span class="p-unit">mm</span>
             <button class="p-btn" onclick="applyNoStroke()" style="flex:0;padding:4px 7px" title="No stroke">✕</button>
+          </div>
+          <div class="prop-row" id="stroke-style-row" style="display:none">
+            <span class="p-lbl">Line style</span>
+            <select class="p-sel" id="el-stroke-style" onchange="applyStrokeStyle(this.value)">
+              <option value="solid">Solid</option>
+              <option value="dashed">Dashed</option>
+              <option value="dotted">Dotted</option>
+              <option value="dash-dot">Dash-dot</option>
+              <option value="cloud">Revision cloud</option>
+            </select>
+          </div>
+          <div class="prop-row" id="cloud-sz-shape-row" style="display:none">
+            <span class="p-lbl">Arc size</span>
+            <input class="p-inp" id="el-cloud-sz-shape" type="number" value="5" min="2" max="20" step="0.5" onchange="applyStrokeStyle()">
+            <span class="p-unit">mm</span>
           </div>
         </div>
 
@@ -1503,6 +1746,8 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
     display:none;position:fixed;z-index:9999;
     background:var(--surf);border:1px solid var(--bdr);border-radius:8px;
     box-shadow:0 8px 24px rgba(0,0,0,0.5);padding:4px 0;min-width:160px">
+    <div class="dd-item" onclick="sheetCtxProperties()">📋 Sheet Properties</div>
+    <div class="dd-sep"></div>
     <div class="dd-item" onclick="sheetCtxRename()">✏️ Rename sheet</div>
     <div class="dd-item" onclick="sheetCtxDuplicate()">⧉ Duplicate sheet</div>
     <div class="dd-sep"></div>
@@ -1542,6 +1787,10 @@ let paperKey    = 'A3';
 let landscape   = true;
 let gridOn      = true;
 let gridMm      = 5;
+// ── Version — update this on every release ────────────────────────────────────
+const DASU_VERSION = '0.4.0-alpha';
+const DASU_BUILD   = '260320-1332';   // YYMMDD-HHMM 24hr
+
 let tool        = 'select';
 let _guides     = [];   // smart guide lines
 let _bonsaiMeta = { projectName: '', ifcPath: '', bridgePort: 7821, linkedDrawings: [] };
@@ -1598,6 +1847,7 @@ window.addEventListener('DOMContentLoaded', () => {
     backgroundColor: '#1c1c1e',
     preserveObjectStacking: true,
     selection: true,
+    perPixelTargetFind: false,   // click bounding box not pixel-perfect — helps text selection
   });
 
   buildSheet();
@@ -1610,7 +1860,9 @@ window.addEventListener('DOMContentLoaded', () => {
   canvas.on('object:modified',   e => { onMod(e); onMovingEnd(); });
   canvas.on('object:added', e => {
     // If a draw tool is active, immediately suspend the new object
-    if (tool && tool !== 'select' && e.target && !e.target._isSheetRect) {
+    // Exception: text objects placed by the text tool should stay selectable
+    const isTextObj = e.target && (e.target.type === 'i-text' || e.target.type === 'text' || e.target.type === 'textbox');
+    if (tool && tool !== 'select' && !isTextObj && e.target && !e.target._isSheetRect) {
       e.target._wasSelectable = true;
       e.target._wasEvented    = true;
       e.target.selectable     = false;
@@ -1640,6 +1892,11 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('file-in').addEventListener('change', e => {
     for (const f of e.target.files) loadFile(f, null);
     e.target.value = '';
+  });
+
+  // Asset library file input
+  document.getElementById('asset-import-in').addEventListener('change', function() {
+    importAssets(this);
   });
 
   document.addEventListener('keydown', onKey);
@@ -1690,6 +1947,10 @@ function forceRefresh() {
   canvas.renderAll();
   canvas.requestRenderAll();
 }
+
+// Public alias — call from console or Sheet Properties panel
+// e.g. after editing meta: _sheets[0].meta.drawnBy='Nigel'; refreshTitleBlocks()
+const refreshTitleBlocks = () => _refreshTitleBlocks();
 
 function fitZoom() {
   const area = document.getElementById('area');
@@ -1766,12 +2027,14 @@ function onDown(opt) {
     const p = canvas.getPointer(opt.e);
     const t = new fabric.IText('Text', {
       left: p.x, top: p.y,
-      fontFamily:   'Arial',
-      fontSize:     3.5 * R,
-      fill:         '#000000',
-      lineHeight:   1.2,
-      charSpacing:  0,
-      _annotType:   'text',
+      fontFamily:          'Arial',
+      fontSize:            3.5 * R,
+      fill:                '#000000',
+      lineHeight:          1.2,
+      charSpacing:         0,
+      _annotType:          'text',
+      perPixelTargetFind:  false,   // click anywhere in bounding box selects
+      padding:             4,       // extra hit area around text
     });
     canvas.add(t);
     canvas.setActiveObject(t);
@@ -2150,6 +2413,100 @@ function afterRender() {
     ctx.restore();
   });
 
+  // ── Shape revision cloud — rect, ellipse, polygon with _strokeStyle=cloud ──
+  canvas.getObjects().forEach(obj => {
+    if (obj._strokeStyle !== 'cloud') return;
+    const type = obj.type;
+    if (!['rect','ellipse','polygon','polyline'].includes(type)) return;
+
+    const arcSz     = (obj._cloudSzShape || 5) * R * zoom;
+    const halfAngle = cloudArcAngle * 0.5 * Math.PI / 180;
+    const r         = arcSz / (2 * Math.sin(halfAngle));
+    const inset     = r * Math.cos(halfAngle);
+    const w         = (obj._cloudStrokeW || 0.25) * R * zoom;
+    const col       = obj._cloudStrokeCol || obj.stroke || '#000000';
+
+    // Centre and angle
+    const cx  = vpt[4] + (obj.left + obj.getScaledWidth()  / 2) * zoom;
+    const cy  = vpt[5] + (obj.top  + obj.getScaledHeight() / 2) * zoom;
+    const ang = (obj.angle || 0) * Math.PI / 180;
+
+    // Transform a local offset point to screen coords
+    const toScreen = (lx, ly) => ({
+      x: cx + lx * Math.cos(ang) - ly * Math.sin(ang),
+      y: cy + lx * Math.sin(ang) + ly * Math.cos(ang),
+    });
+
+    // Build screen-space polygon vertices
+    let pts = [];
+
+    if (type === 'rect') {
+      const hw = obj.getScaledWidth()  / 2 * zoom;
+      const hh = obj.getScaledHeight() / 2 * zoom;
+      pts = [
+        toScreen(-hw, -hh), toScreen(hw, -hh),
+        toScreen(hw,   hh), toScreen(-hw, hh),
+      ];
+    } else if (type === 'ellipse') {
+      // Approximate ellipse with N points
+      const hw = obj.getScaledWidth()  / 2 * zoom;
+      const hh = obj.getScaledHeight() / 2 * zoom;
+      const N  = Math.max(16, Math.round(Math.PI * (hw + hh) / arcSz));
+      for (let i = 0; i < N; i++) {
+        const a = (i / N) * Math.PI * 2;
+        pts.push(toScreen(hw * Math.cos(a), hh * Math.sin(a)));
+      }
+    } else if (type === 'polygon' || type === 'polyline') {
+      // Use actual vertex points, transformed to screen
+      const m = obj.calcTransformMatrix();
+      (obj.points || []).forEach(p => {
+        const tp = fabric.util.transformPoint(
+          new fabric.Point(p.x - obj.pathOffset.x, p.y - obj.pathOffset.y), m
+        );
+        pts.push({ x: vpt[4] + tp.x * zoom, y: vpt[5] + tp.y * zoom });
+      });
+    }
+
+    if (pts.length < 2) return;
+
+    // cloudEdge draws arcs between two screen points
+    const cloudEdge = (p1, p2) => {
+      const dx  = p2.x - p1.x, dy = p2.y - p1.y;
+      const len = Math.sqrt(dx*dx + dy*dy);
+      if (len < 1) return;
+      const n   = Math.max(1, Math.round(len / arcSz));
+      const sx  = dx / n,  sy  = dy / n;
+      const ux  = dx / len, uy = dy / len;
+      const onx = uy,      ony = -ux;
+      for (let i = 0; i < n; i++) {
+        const ax = p1.x + sx * i,  ay = p1.y + sy * i;
+        const bx = ax + sx,        by = ay + sy;
+        const mx = (ax + bx) / 2,  my = (ay + by) / 2;
+        const acx = mx - onx * inset;
+        const acy = my - ony * inset;
+        ctx.beginPath();
+        ctx.arc(acx, acy, r,
+          Math.atan2(ay - acy, ax - acx),
+          Math.atan2(by - acy, bx - acx), false);
+        ctx.stroke();
+      }
+    };
+
+    ctx.save();
+    ctx.strokeStyle = col;
+    ctx.lineWidth   = w;
+    ctx.lineCap     = 'round';
+    ctx.lineJoin    = 'round';
+    ctx.setLineDash([]);
+
+    // Walk all edges, close the polygon
+    for (let i = 0; i < pts.length; i++) {
+      cloudEdge(pts[i], pts[(i + 1) % pts.length]);
+    }
+
+    ctx.restore();
+  });
+
   // ── Arrow heads — drawn in afterRender so they are always correct size ───
   canvas.getObjects().forEach(obj => {
     if (obj._annotType !== 'arrow') return;
@@ -2302,10 +2659,11 @@ function _suspendObjectInteraction() {
 function _restoreObjectInteraction() {
   canvas.getObjects().forEach(o => {
     if (o._isSheetRect) return;
-    // Locked objects stay non-selectable
     if (o._locked) return;
-    o.selectable = o._wasSelectable !== undefined ? o._wasSelectable : true;
-    o.evented    = o._wasEvented    !== undefined ? o._wasEvented    : true;
+    // Text objects must always be selectable — never leave them suspended
+    const isText = o.type === 'i-text' || o.type === 'text' || o.type === 'textbox';
+    o.selectable = isText ? true : (o._wasSelectable !== undefined ? o._wasSelectable : true);
+    o.evented    = isText ? true : (o._wasEvented    !== undefined ? o._wasEvented    : true);
     delete o._wasSelectable;
     delete o._wasEvented;
   });
@@ -2706,6 +3064,260 @@ async function installEzdxf() {
   btn.style.pointerEvents = 'auto';
 }
 
+function showToast(msg, duration=2500) {
+  const existing = document.getElementById('_dasu-toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.id = '_dasu-toast';
+  toast.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--surf);border:1px solid var(--accent);color:var(--accent);
+    padding:8px 18px;border-radius:8px;font-size:13px;font-family:var(--sans);
+    box-shadow:0 4px 16px rgba(0,0,0,0.4);z-index:99999;pointer-events:none`;
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), duration);
+}
+
+// ── Asset Library ─────────────────────────────────────────────────────────────
+
+let _assetFilter = 'all';
+
+const ASSET_CATEGORIES = {
+  titleblock: 'Title Block',
+  symbol:     'Symbol',
+  detail:     'Detail',
+  custom:     'Custom',
+};
+
+async function importAssets(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+
+  showToast('Importing ' + files.length + ' asset' + (files.length > 1 ? 's' : '') + '…');
+
+  for (const file of files) {
+    try {
+      const svg  = await file.text();
+      const id   = 'asset-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+      const name = file.name.replace(/\.svg$/i, '').replace(/[-_]/g, ' ');
+      const thumb = await _svgToThumb(svg, 120, 80);
+      const asset = { id, name, category: 'custom', svg, thumb, created: new Date().toISOString() };
+      await _dbSet('assets', id, asset);
+    } catch(e) {
+      console.warn('Asset import failed for', file.name, e);
+    }
+  }
+
+  input.value = '';
+  const grid = document.getElementById('asset-grid');
+  if (grid) await loadAssetLibrary();
+  await _refreshAssetDropdown();
+  showToast('✓ ' + files.length + ' asset' + (files.length > 1 ? 's' : '') + ' imported');
+}
+
+async function _svgToThumb(svgStr, w, h) {
+  return new Promise(res => {
+    const timeout = setTimeout(() => res(null), 3000);
+    try {
+      const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+      const url  = URL.createObjectURL(blob);
+      const img  = new Image();
+      img.onload = () => {
+        clearTimeout(timeout);
+        try {
+          const cvs = document.createElement('canvas');
+          cvs.width = w; cvs.height = h;
+          const ctx = cvs.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+          const scale = Math.min(w / (img.width || w), h / (img.height || h), 1);
+          const iw = (img.width || w) * scale;
+          const ih = (img.height || h) * scale;
+          ctx.drawImage(img, (w - iw) / 2, (h - ih) / 2, iw, ih);
+          URL.revokeObjectURL(url);
+          res(cvs.toDataURL('image/png'));
+        } catch(e) { URL.revokeObjectURL(url); res(null); }
+      };
+      img.onerror = () => { clearTimeout(timeout); URL.revokeObjectURL(url); res(null); };
+      img.src = url;
+    } catch(e) { clearTimeout(timeout); res(null); }
+  });
+}
+
+async function loadAssetLibrary() {
+  const grid   = document.getElementById('asset-grid');
+  if (!grid) return;
+
+  const assets = await _dbGetAll('assets');
+  const filtered = _assetFilter === 'all'
+    ? assets
+    : assets.filter(a => a.category === _assetFilter);
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div style="color:var(--txt2);font-size:12px;grid-column:1/-1;
+      padding:30px 0;text-align:center">
+      ${assets.length === 0
+        ? 'No assets yet. Click <strong>Import SVG Asset…</strong> to add your first.'
+        : 'No assets in this category.'}
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(a => `
+    <div style="
+      background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;
+      overflow:hidden;cursor:pointer;transition:border-color 0.12s"
+      onmouseover="this.style.borderColor='var(--accent)'"
+      onmouseout="this.style.borderColor='var(--bdr)'"
+      title="${a.name}">
+      <!-- Thumbnail -->
+      <div style="height:80px;background:#fff;display:flex;align-items:center;justify-content:center;
+        border-bottom:1px solid var(--bdr)"
+        onclick="insertAssetFromLibrary('${a.id}')">
+        ${a.thumb
+          ? `<img src="${a.thumb}" style="max-width:100%;max-height:80px;object-fit:contain">`
+          : `<span style="font-size:28px;color:var(--txt2)">⬡</span>`}
+      </div>
+      <!-- Name + controls -->
+      <div style="padding:6px 8px">
+        <div style="font-size:11px;color:var(--txt);font-weight:500;
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px"
+          title="${a.name}">${a.name}</div>
+        <div style="display:flex;gap:4px;align-items:center">
+          <select onchange="setAssetCategory('${a.id}',this.value)"
+            style="flex:1;background:var(--surf);border:1px solid var(--bdr);color:var(--txt2);
+            font-size:10px;border-radius:3px;padding:1px 2px">
+            ${Object.entries(ASSET_CATEGORIES).map(([k,v]) =>
+              `<option value="${k}" ${a.category===k?'selected':''}>${v}</option>`
+            ).join('')}
+          </select>
+          <button onclick="deleteAsset('${a.id}')"
+            style="background:none;border:none;cursor:pointer;color:var(--danger);
+            font-size:13px;padding:0 2px" title="Delete">🗑</button>
+        </div>
+        <button onclick="insertAssetFromLibrary('${a.id}')"
+          style="width:100%;margin-top:5px;background:var(--accent);color:#000;
+          border:none;border-radius:4px;font-size:11px;font-weight:600;
+          padding:4px;cursor:pointer">Insert ↗</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function filterAssets(cat, btn) {
+  _assetFilter = cat;
+  document.querySelectorAll('#asset-cat-tabs .fill-tab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  await loadAssetLibrary();
+}
+
+async function setAssetCategory(id, cat) {
+  const asset = await _dbGet('assets', id);
+  if (!asset) return;
+  asset.category = cat;
+  await _dbSet('assets', id, asset);
+  await _refreshAssetDropdown();
+}
+
+async function deleteAsset(id) {
+  if (!confirm('Delete this asset from your library?')) return;
+  await _dbDelete('assets', id);
+  await loadAssetLibrary();
+  await _refreshAssetDropdown();
+}
+
+async function insertAssetFromLibrary(id) {
+  const asset = await _dbGet('assets', id);
+  if (!asset || !asset.svg) return;
+  closeModal('modal-assets');
+  _closeAssetsPanel();
+
+  fabric.loadSVGFromString(asset.svg, (objs, opts) => {
+    if (!objs || !objs.length) return;
+    const grp = fabric.util.groupSVGElements(objs, opts);
+    const { wPx, hPx } = sheetDim();
+    const maxW = wPx * 0.6, maxH = hPx * 0.6;
+    const sc   = Math.min(maxW / grp.width, maxH / grp.height, 1);
+    if (sc < 1) grp.scale(sc);
+    grp._annotType = 'drawing';
+    grp._fileName  = asset.name;
+    grp._rawSvg    = asset.svg;
+    centerObj(grp);
+    canvas.add(grp);
+    canvas.setActiveObject(grp);
+    canvas.requestRenderAll();
+    syncProps(grp);
+  });
+}
+
+async function _refreshAssetDropdown() {
+  const list = document.getElementById('assets-user-list');
+  if (!list) return;
+  try {
+    const assets = await _dbGetAll('assets');
+    if (!assets.length) {
+      list.innerHTML = `<div style="padding:4px 12px 6px;font-size:11px;color:var(--txt2);font-style:italic">No saved assets yet</div>`;
+      return;
+    }
+    list.innerHTML = assets.slice(0, 8).map(a => `
+      <div class="dd-item" onclick="insertAssetFromLibrary('${a.id}')" style="gap:8px">
+        ${a.thumb
+          ? `<img src="${a.thumb}" style="width:24px;height:16px;object-fit:contain;border-radius:2px;background:#fff;flex-shrink:0">`
+          : `<span style="font-size:11px;flex-shrink:0">⬡</span>`}
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.name}</span>
+      </div>
+    `).join('') + (assets.length > 8
+      ? `<div style="padding:2px 12px 4px;font-size:10px;color:var(--txt2)">+${assets.length - 8} more — open library</div>`
+      : '');
+  } catch(e) {
+    console.error('_refreshAssetDropdown error:', e);
+    list.innerHTML = `<div style="padding:4px 12px 6px;font-size:11px;color:var(--danger)">Error loading assets</div>`;
+  }
+}
+
+// Load user assets into dropdown on startup
+async function _initAssetLibrary() {
+  await _refreshAssetDropdown();
+}
+
+// ── Assets Panel ──────────────────────────────────────────────────────────────
+
+function toggleAssetsPanel() {
+  const panel = document.getElementById('assets-panel');
+  const btn   = document.getElementById('assets-btn');
+  const open  = panel.style.display !== 'none';
+  if (open) {
+    panel.style.display = 'none';
+    btn.classList.remove('on');
+  } else {
+    const rect = btn.getBoundingClientRect();
+    panel.style.top   = (rect.bottom + 4) + 'px';
+    panel.style.left  = rect.left + 'px';
+    panel.style.display = '';
+    btn.classList.add('on');
+    _refreshAssetDropdown();   // always refresh user assets on open
+  }
+}
+
+function _closeAssetsPanel() {
+  const panel = document.getElementById('assets-panel');
+  const btn   = document.getElementById('assets-btn');
+  if (panel) panel.style.display = 'none';
+  if (btn)   btn.classList.remove('on');
+}
+
+function assetsInsert(type) {
+  _closeAssetsPanel();
+  switch(type) {
+    case 'titleblock': addTitleBlock();  break;
+    case 'north':      addNorth();       break;
+    case 'scalebar':   addScaleBar();    break;
+    case 'text':       setTool('text');  break;
+    case 'dim':        setTool('dim');   break;
+    case 'arrow':      setTool('arrow'); break;
+  }
+}
+
 // ── Element List Panel ────────────────────────────────────────────────────────
 
 function _elLabel(o) {
@@ -2734,7 +3346,7 @@ function buildElList() {
   const objs       = allObjs.filter(o => !o._isSheetRect && !o._isDimPreview);
 
   if (!objs.length) {
-    panel.innerHTML = '<div style="padding:12px;font-size:12px;color:var(--txt2)">No elements on this sheet.</div>';
+    panel.innerHTML = '<div style="padding:12px;font-size:12px;color:var(--txt2)">No objects on this sheet.</div>';
     return;
   }
 
@@ -3475,6 +4087,50 @@ function centerObj(obj) {
 }
 
 // ── Title block ───────────────────────────────────────────────────────────────
+// ── Token resolver ────────────────────────────────────────────────────────────
+// Reads from active sheet meta, Bonsai project data, and auto values.
+// Call _resolveTokens(text) to replace {{token}} in any string.
+
+function _resolveTokens(text) {
+  const s    = _sheets[_activeSheetIdx] || {};
+  const meta = s.meta || {};
+  const bm   = _bonsaiMeta || {};
+  const now  = new Date();
+
+  const pad  = n => String(n).padStart(2, '0');
+  const date = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;
+  const yr   = now.getFullYear();
+
+  // Find active drawing scale from canvas if not in meta
+  const activeScale = (() => {
+    if (meta.scale) return meta.scale;
+    const drw = canvas.getObjects().find(o => o._drawingScale);
+    return drw ? drw._drawingScale : '';
+  })();
+
+  const tokens = {
+    'sheet.name':    s.name          || '',
+    'sheet.id':      meta.id         || '',
+    'sheet.scale':   activeScale     || '',
+    'sheet.status':  meta.status     || 'DRAFT',
+    'revision':      meta.revision   || '—',
+    'drawn.by':      meta.drawnBy    || '',
+    'checked.by':    meta.checkedBy  || '',
+    'issue.date':    meta.issueDate  || '',
+    'purpose':       meta.purpose    || '',
+    'discipline':    meta.discipline || '',
+    'description':   meta.description|| '',
+    'project.name':  bm.projectName  || '',
+    'project.address': bm.projectAddress || '',
+    'date':          date,
+    'year':          yr,
+  };
+
+  return text.replace(/\{\{([^}]+)\}\}/g, (_, key) =>
+    tokens[key.trim()] !== undefined ? tokens[key.trim()] : `{{${key}}}`
+  );
+}
+
 function addTitleBlock() {
   const { wPx, hPx } = sheetDim();
   const tW = 180 * R, tH = 50 * R;
@@ -3488,7 +4144,25 @@ function addTitleBlock() {
   const fs  = 2.5 * R, fs2 = 2 * R;
   const lw  = 0.5, lw2 = 0.3;
 
-  const yr = new Date().getFullYear();
+  // Resolve tokens from sheet meta + auto values
+  const T = str => _resolveTokens(str);
+  const s    = _sheets[_activeSheetIdx] || {};
+  const meta = s.meta || {};
+  const now  = new Date();
+  const pad  = n => String(n).padStart(2, '0');
+
+  const projectName  = T('{{project.name}}')  || 'Project Name';
+  const sheetName    = T('{{sheet.name}}')     || 'Sheet Name';
+  const sheetId      = T('{{sheet.id}}')       || '—';
+  const scale        = T('{{sheet.scale}}')    || '—';
+  const drawnBy      = T('{{drawn.by}}')       || '—';
+  const checkedBy    = T('{{checked.by}}')     || '—';
+  const revision     = T('{{revision}}')       || '—';
+  const date         = T('{{date}}');
+  const status       = T('{{sheet.status}}');
+  const description  = T('{{description}}')    || 'Drawing Description';
+  const paper        = (s.landscape ? 'L' : 'P') + ' ' + (s.paper || 'A3');
+  const yr           = now.getFullYear();
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg"
     width="${tW}" height="${tH}" viewBox="0 0 ${tW} ${tH}">
@@ -3498,12 +4172,12 @@ function addTitleBlock() {
   <line x1="${lc}" y1="0"    x2="${lc}" y2="${tH}"  stroke="#444" stroke-width="${lw}"/>
   <rect x="0" y="0" width="${lc}" height="${tH*0.45}" fill="#f0f0f0"/>
   <text x="${lc/2}" y="${tH*0.225}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs}" font-weight="bold" fill="#222">Practice Name</text>
+        font-family="Arial" font-size="${fs}" font-weight="bold" fill="#222">${projectName}</text>
   <line x1="0" y1="${tH*0.45}" x2="${lc}" y2="${tH*0.45}" stroke="#444" stroke-width="${lw2}"/>
   <text x="${lc/2}" y="${tH*0.6}"  text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs2}" fill="#555">Street Name</text>
+        font-family="Arial" font-size="${fs2}" fill="#555">Status: ${status}</text>
   <text x="${lc/2}" y="${tH*0.78}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs2}" fill="#555">Suburb  City</text>
+        font-family="Arial" font-size="${fs2}" fill="#555">${date}</text>
 
   <!-- Right horizontal rules -->
   <line x1="${lc}" y1="${rh}"    x2="${tW}" y2="${rh}"    stroke="#aaa" stroke-width="${lw2}"/>
@@ -3520,29 +4194,29 @@ function addTitleBlock() {
   <line x1="${lc+seg*2}" y1="${rh*4}" x2="${lc+seg*2}" y2="${tH}" stroke="#aaa" stroke-width="${lw2}"/>
   <line x1="${lc+seg*3}" y1="${rh*4}" x2="${lc+seg*3}" y2="${tH}" stroke="#aaa" stroke-width="${lw2}"/>
 
-  <!-- Row 1: Project / Drawer / Proj No -->
+  <!-- Row 1: Sheet name / Drawn by / Sheet ID -->
   <text x="${lc+(c1-lc)/2}"  y="${rh*0.5}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs}" font-weight="bold" fill="#222">Project Name</text>
+        font-family="Arial" font-size="${fs}" font-weight="bold" fill="#222">${sheetName}</text>
   <text x="${(c1+c2)/2}"     y="${rh*0.5}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs2}" fill="#666">Drawer</text>
+        font-family="Arial" font-size="${fs2}" fill="#666">${drawnBy}</text>
   <text x="${(c2+tW)/2}"     y="${rh*0.5}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs2}" fill="#666">Proj No.</text>
+        font-family="Arial" font-size="${fs2}" fill="#666">${sheetId}</text>
 
-  <!-- Row 2: Drawing title / Checker / Date -->
+  <!-- Row 2: Description / Checked by / Date -->
   <text x="${lc+(c1-lc)/2}"  y="${rh*1.5}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs2}" fill="#444">Drawing Title</text>
+        font-family="Arial" font-size="${fs2}" fill="#444">${description}</text>
   <text x="${(c1+c2)/2}"     y="${rh*1.5}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs2}" fill="#666">Checker</text>
+        font-family="Arial" font-size="${fs2}" fill="#666">${checkedBy}</text>
   <text x="${(c2+tW)/2}"     y="${rh*1.5}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs2}" fill="#444">dd/mm/yy</text>
+        font-family="Arial" font-size="${fs2}" fill="#444">${date}</text>
 
-  <!-- Row 3: Subtitle / Rev / Scale -->
+  <!-- Row 3: Status / Rev / Scale -->
   <text x="${lc+(c1-lc)/2}"  y="${rh*2.5}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs2}" fill="#444">Subtitle</text>
+        font-family="Arial" font-size="${fs2}" fill="#444">${status}</text>
   <text x="${(c1+c2)/2}"     y="${rh*2.5}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs2}" fill="#666">Rev</text>
+        font-family="Arial" font-size="${fs2}" fill="#666">${revision}</text>
   <text x="${(c2+tW)/2}"     y="${rh*2.5}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs2}" fill="#444">1:100</text>
+        font-family="Arial" font-size="${fs2}" fill="#444">${scale}</text>
 
   <!-- Row 4: copyright -->
   <text x="${lc+rW/2}"  y="${rh*3.5}" text-anchor="middle" dominant-baseline="central"
@@ -3550,13 +4224,13 @@ function addTitleBlock() {
 
   <!-- Row 5: STAGE / paper / drg no / rev -->
   <text x="${lc+seg*0.5}" y="${rh*4.5}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs}" font-weight="bold" fill="#222">STAGE</text>
+        font-family="Arial" font-size="${fs}" font-weight="bold" fill="#222">${status}</text>
   <text x="${lc+seg*1.5}" y="${rh*4.5}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs2}" fill="#444">A3</text>
+        font-family="Arial" font-size="${fs2}" fill="#444">${paper}</text>
   <text x="${lc+seg*2.5}" y="${rh*4.5}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs2}" fill="#444">A 101</text>
+        font-family="Arial" font-size="${fs2}" fill="#444">${sheetId}</text>
   <text x="${lc+seg*3.5}" y="${rh*4.5}" text-anchor="middle" dominant-baseline="central"
-        font-family="Arial" font-size="${fs}" font-weight="bold" fill="#222">—</text>
+        font-family="Arial" font-size="${fs}" font-weight="bold" fill="#222">${revision}</text>
 </svg>`;
 
   fabric.loadSVGFromString(svg, (objs, opts) => {
@@ -3881,6 +4555,21 @@ function syncProps(obj) {
     const sw = (src.strokeWidth || 0) / R;
     document.getElementById('el-stroke-col').value = _hexColour(src.stroke) || '#000000';
     document.getElementById('el-stroke-w').value   = sw.toFixed(2);
+
+    // Line style — only for closed shapes
+    const styleRow   = document.getElementById('stroke-style-row');
+    const cloudRow   = document.getElementById('cloud-sz-shape-row');
+    const styleSel   = document.getElementById('el-stroke-style');
+    if (isShape) {
+      styleRow.style.display = '';
+      const ss = obj._strokeStyle || 'solid';
+      styleSel.value = ss;
+      cloudRow.style.display = ss === 'cloud' ? '' : 'none';
+      document.getElementById('el-cloud-sz-shape').value = obj._cloudSzShape || 5;
+    } else {
+      styleRow.style.display = 'none';
+      cloudRow.style.display = 'none';
+    }
   }
 
   // Populate fill
@@ -5256,9 +5945,20 @@ function applyStroke() {
   const o = canvas.getActiveObject(); if (!o) return;
   const col = document.getElementById('el-stroke-col').value;
   const w   = parseFloat(document.getElementById('el-stroke-w').value) * R;
-  // Recursively apply to all objects in the tree
+
+  // Cloud style — update stored values for afterRender, keep Fabric stroke transparent
+  if (o._strokeStyle === 'cloud') {
+    o._cloudStrokeCol = col;
+    o._cloudStrokeW   = parseFloat(document.getElementById('el-stroke-w').value) || 0.25;
+    o.set({ stroke: 'transparent', strokeWidth: 0.1 });
+    canvas.renderAll();
+    canvas.requestRenderAll();
+    return;
+  }
+
+  // Normal stroke — apply to all objects in tree
   _walkObjects(o, t => {
-    if (t === o && o.type === 'group') return;  // skip the group container itself
+    if (t === o && o.type === 'group') return;
     if (t.stroke !== undefined) t.set({ stroke: col, strokeWidth: w, strokeUniform: true });
   });
   canvas.renderAll();
@@ -5272,6 +5972,27 @@ function applyNoStroke() {
     if (t.stroke !== undefined) t.set({ stroke: null, strokeWidth: 0 });
   });
   canvas.renderAll();
+  canvas.requestRenderAll();
+}
+
+function applyStrokeStyle(val) {
+  const o = canvas.getActiveObject(); if (!o) return;
+  const style = val || document.getElementById('el-stroke-style').value;
+  o._strokeStyle = style;
+  const cloudRow = document.getElementById('cloud-sz-shape-row');
+  if (cloudRow) cloudRow.style.display = style === 'cloud' ? '' : 'none';
+
+  if (style === 'cloud') {
+    // Store current stroke colour/weight and arc size for cloud renderer, hide Fabric stroke
+    o._cloudStrokeCol = document.getElementById('el-stroke-col').value;
+    o._cloudStrokeW   = parseFloat(document.getElementById('el-stroke-w').value) || 0.25;
+    o._cloudSzShape   = parseFloat(document.getElementById('el-cloud-sz-shape').value) || 5;
+    o.set({ stroke: 'transparent', strokeWidth: 0.1 });
+  } else {
+    const col = document.getElementById('el-stroke-col').value;
+    const w   = parseFloat(document.getElementById('el-stroke-w').value) * R;
+    o.set({ stroke: col, strokeWidth: w, strokeUniform: true });
+  }
   canvas.requestRenderAll();
 }
 
@@ -6250,6 +6971,7 @@ function addPage(e) {
     paper:     paperKey,
     landscape: landscape,
     json:      null,
+    meta:      _blankMeta(),
   };
   _sheets.push(newSheet);
   _activeSheetIdx = idx;
@@ -6278,6 +7000,7 @@ function closeMenus() {
 document.addEventListener('click', e => {
   if (!e.target.closest('.menu-wrap')) closeMenus();
   if (!e.target.closest('#sheet-ctx-menu')) _hideSheetCtxMenu();
+  if (!e.target.closest('#assets-panel') && e.target.id !== 'assets-btn' && !e.target.closest('#assets-btn')) _closeAssetsPanel();
 });
 
 // Keyboard shortcut to open prefs
@@ -6298,7 +7021,11 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 function closeOnOverlay(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
 
 function openPrefs()  { openModal('modal-prefs'); }
-function openAbout()  { openModal('modal-about'); }
+function openAbout() {
+  const el = document.getElementById('about-ver');
+  if (el) el.innerHTML = `Version ${DASU_VERSION} &nbsp;·&nbsp; Build ${DASU_BUILD} &nbsp;·&nbsp; 出す &nbsp;·&nbsp; to output / to print`;
+  openModal('modal-about');
+}
 
 // ── Preferences — save applies settings live ──────────────────────────────────
 function savePrefs() {
@@ -6364,6 +7091,7 @@ const CUSTOM_PROPS = [
   '_dimTxtSize','_dimTxtOff','_dimTextOverride','_dimModelMm','_dimColour',
   '_absPts','pathOffset',
   '_colourMode','_singleColour','_origFill','_origStroke',
+  '_strokeStyle','_cloudSzShape','_cloudStrokeCol','_cloudStrokeW',
   '_fromBridge','_fromDxf','_fileName','_dxfLayers','_dxfLayerMap','_rawSvg','_pdfPage','_isBonsaiSvg','_hidden',
 ];
 
@@ -6464,13 +7192,13 @@ function _serialise(sheetIndices, mode) {
   const sheetsToSave = sheetIndices.map(i => _sheets[i]).filter(Boolean);
 
   const doc = {
-    version:     '0.2.0',
+    version:     DASU_VERSION,
     savedAt:     new Date().toISOString(),
     mode:        mode,
     preferences: _capturePrefs(),
     bonsai:      { ..._bonsaiMeta },
     sheets:      sheetsToSave.map(s => {
-      const sd = { id: s.id, name: s.name, paper: s.paper, landscape: s.landscape };
+      const sd = { id: s.id, name: s.name, paper: s.paper, landscape: s.landscape, meta: s.meta || _blankMeta() };
       if (mode === 'portable') {
         sd.json = s.json;
       } else {
@@ -6522,10 +7250,11 @@ async function _deserialise(doc) {
     paper:     s.paper || 'A3',
     landscape: s.landscape !== false,
     json:      s.json || null,
+    meta:      Object.assign(_blankMeta(), s.meta || {}),
   }));
 
   if (_sheets.length === 0) {
-    _sheets = [{ id: 'sheet-0', name: 'Page 1', paper: 'A3', landscape: true, json: null }];
+    _sheets = [{ id: 'sheet-0', name: 'Page 1', paper: 'A3', landscape: true, json: null, meta: _blankMeta() }];
   }
 
   _rebuildSheetTabs();
@@ -6572,8 +7301,61 @@ function _hideSheetCtxMenu() {
   if (menu) menu.style.display = 'none';
 }
 
-function sheetCtxRename() {
+function sheetCtxProperties() {
   _hideSheetCtxMenu();
+  const s    = _sheets[_sheetCtxIdx];
+  const meta = s.meta || {};
+
+  // Populate fields
+  document.getElementById('sp-name').value        = s.name          || '';
+  document.getElementById('sp-id').value          = meta.id         || '';
+  document.getElementById('sp-description').value = meta.description|| '';
+  document.getElementById('sp-scale').value       = meta.scale      || '';
+  document.getElementById('sp-status').value      = meta.status     || 'DRAFT';
+  document.getElementById('sp-revision').value    = meta.revision   || '';
+  document.getElementById('sp-issuedate').value   = meta.issueDate  || '';
+  document.getElementById('sp-purpose').value     = meta.purpose    || '';
+  document.getElementById('sp-drawnby').value     = meta.drawnBy    || '';
+  document.getElementById('sp-checkedby').value   = meta.checkedBy  || '';
+  document.getElementById('sp-discipline').value  = meta.discipline || '';
+
+  // Store which sheet we're editing
+  document.getElementById('modal-sheet-props').dataset.sheetIdx = _sheetCtxIdx;
+
+  openModal('modal-sheet-props');
+}
+
+function applySheetProperties() {
+  const idx = parseInt(document.getElementById('modal-sheet-props').dataset.sheetIdx);
+  const s   = _sheets[idx];
+  if (!s) return;
+
+  // Update sheet name
+  const newName = document.getElementById('sp-name').value.trim() || s.name;
+  s.name = newName;
+
+  // Update meta
+  s.meta = Object.assign(s.meta || _blankMeta(), {
+    id:          document.getElementById('sp-id').value.trim(),
+    description: document.getElementById('sp-description').value.trim(),
+    scale:       document.getElementById('sp-scale').value.trim(),
+    status:      document.getElementById('sp-status').value,
+    revision:    document.getElementById('sp-revision').value.trim(),
+    issueDate:   document.getElementById('sp-issuedate').value,
+    purpose:     document.getElementById('sp-purpose').value.trim(),
+    drawnBy:     document.getElementById('sp-drawnby').value.trim(),
+    checkedBy:   document.getElementById('sp-checkedby').value.trim(),
+    discipline:  document.getElementById('sp-discipline').value,
+  });
+
+  _rebuildSheetTabs();
+  closeModal('modal-sheet-props');
+
+  // If editing the active sheet, refresh title blocks immediately
+  if (idx === _activeSheetIdx) _refreshTitleBlocks();
+}
+
+function sheetCtxRename() {
   const btn = document.querySelectorAll('.page-tab')[_sheetCtxIdx];
   if (btn) sheetStartRename(_sheetCtxIdx, btn);
 }
@@ -6586,6 +7368,114 @@ function sheetCtxDuplicate() {
 function sheetCtxDelete() {
   _hideSheetCtxMenu();
   deleteSheet(_sheetCtxIdx);
+}
+
+// ── Title block refresh ───────────────────────────────────────────────────────
+// Finds all title block objects on the active sheet and regenerates them
+// in place preserving position, scale, and angle.
+
+function _refreshTitleBlocks() {
+  const tbs = canvas.getObjects().filter(o => o._isTitleBlock);
+  if (!tbs.length) return;
+
+  const { wPx, hPx } = sheetDim();
+  const tW = 180 * R, tH = 50 * R;
+  const lc = 45 * R;
+  const rW = tW - lc;
+  const rh = tH / 5;
+  const c1 = lc + rW * 0.55;
+  const c2 = c1 + rW * 0.225;
+  const seg = rW / 4;
+  const fs  = 2.5 * R, fs2 = 2 * R;
+  const lw  = 0.5, lw2 = 0.3;
+
+  const T   = str => _resolveTokens(str);
+  const s   = _sheets[_activeSheetIdx] || {};
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+
+  const projectName = T('{{project.name}}')  || 'Project Name';
+  const sheetName   = T('{{sheet.name}}')     || 'Sheet Name';
+  const sheetId     = T('{{sheet.id}}')       || '—';
+  const scale       = T('{{sheet.scale}}')    || '—';
+  const drawnBy     = T('{{drawn.by}}')       || '—';
+  const checkedBy   = T('{{checked.by}}')     || '—';
+  const revision    = T('{{revision}}')       || '—';
+  const date        = T('{{date}}');
+  const status      = T('{{sheet.status}}');
+  const description = T('{{description}}')    || 'Drawing Description';
+  const paper       = (s.landscape ? 'L' : 'P') + ' ' + (s.paper || 'A3');
+  const yr          = now.getFullYear();
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg"
+    width="${tW}" height="${tH}" viewBox="0 0 ${tW} ${tH}">
+  <rect width="${tW}" height="${tH}" fill="white" stroke="#444" stroke-width="${lw}"/>
+  <line x1="${lc}" y1="0" x2="${lc}" y2="${tH}" stroke="#444" stroke-width="${lw}"/>
+  <rect x="0" y="0" width="${lc}" height="${tH*0.45}" fill="#f0f0f0"/>
+  <text x="${lc/2}" y="${tH*0.225}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs}" font-weight="bold" fill="#222">${projectName}</text>
+  <line x1="0" y1="${tH*0.45}" x2="${lc}" y2="${tH*0.45}" stroke="#444" stroke-width="${lw2}"/>
+  <text x="${lc/2}" y="${tH*0.6}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs2}" fill="#555">Status: ${status}</text>
+  <text x="${lc/2}" y="${tH*0.78}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs2}" fill="#555">${date}</text>
+  <line x1="${lc}" y1="${rh}"   x2="${tW}" y2="${rh}"   stroke="#aaa" stroke-width="${lw2}"/>
+  <line x1="${lc}" y1="${rh*2}" x2="${tW}" y2="${rh*2}" stroke="#aaa" stroke-width="${lw2}"/>
+  <line x1="${lc}" y1="${rh*3}" x2="${tW}" y2="${rh*3}" stroke="#aaa" stroke-width="${lw2}"/>
+  <line x1="${lc}" y1="${rh*4}" x2="${tW}" y2="${rh*4}" stroke="#444" stroke-width="${lw}"/>
+  <line x1="${c1}" y1="0" x2="${c1}" y2="${rh*4}" stroke="#aaa" stroke-width="${lw2}"/>
+  <line x1="${c2}" y1="0" x2="${c2}" y2="${rh*4}" stroke="#aaa" stroke-width="${lw2}"/>
+  <line x1="${lc+seg}"   y1="${rh*4}" x2="${lc+seg}"   y2="${tH}" stroke="#aaa" stroke-width="${lw2}"/>
+  <line x1="${lc+seg*2}" y1="${rh*4}" x2="${lc+seg*2}" y2="${tH}" stroke="#aaa" stroke-width="${lw2}"/>
+  <line x1="${lc+seg*3}" y1="${rh*4}" x2="${lc+seg*3}" y2="${tH}" stroke="#aaa" stroke-width="${lw2}"/>
+  <text x="${lc+(c1-lc)/2}" y="${rh*0.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs}" font-weight="bold" fill="#222">${sheetName}</text>
+  <text x="${(c1+c2)/2}"    y="${rh*0.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs2}" fill="#666">${drawnBy}</text>
+  <text x="${(c2+tW)/2}"    y="${rh*0.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs2}" fill="#666">${sheetId}</text>
+  <text x="${lc+(c1-lc)/2}" y="${rh*1.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs2}" fill="#444">${description}</text>
+  <text x="${(c1+c2)/2}"    y="${rh*1.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs2}" fill="#666">${checkedBy}</text>
+  <text x="${(c2+tW)/2}"    y="${rh*1.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs2}" fill="#444">${date}</text>
+  <text x="${lc+(c1-lc)/2}" y="${rh*2.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs2}" fill="#444">${status}</text>
+  <text x="${(c1+c2)/2}"    y="${rh*2.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs2}" fill="#666">${revision}</text>
+  <text x="${(c2+tW)/2}"    y="${rh*2.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs2}" fill="#444">${scale}</text>
+  <text x="${lc+rW/2}"      y="${rh*3.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs2*0.85}" fill="#999">© ${yr} — All rights reserved</text>
+  <text x="${lc+seg*0.5}" y="${rh*4.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs}" font-weight="bold" fill="#222">${status}</text>
+  <text x="${lc+seg*1.5}" y="${rh*4.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs2}" fill="#444">${paper}</text>
+  <text x="${lc+seg*2.5}" y="${rh*4.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs2}" fill="#444">${sheetId}</text>
+  <text x="${lc+seg*3.5}" y="${rh*4.5}" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial" font-size="${fs}" font-weight="bold" fill="#222">${revision}</text>
+</svg>`;
+
+  tbs.forEach(old => {
+    const savedLeft   = old.left;
+    const savedTop    = old.top;
+    const savedScaleX = old.scaleX;
+    const savedScaleY = old.scaleY;
+    const savedAngle  = old.angle;
+    canvas.remove(old);
+
+    fabric.loadSVGFromString(svg, (objs, opts) => {
+      const grp = fabric.util.groupSVGElements(objs, opts);
+      grp.set({ left: savedLeft, top: savedTop,
+                scaleX: savedScaleX, scaleY: savedScaleY, angle: savedAngle });
+      grp._isTitleBlock = true;
+      canvas.add(grp);
+      canvas.requestRenderAll();
+      canvas.sendToBack(sheetRect);
+    });
+  });
 }
 
 function sheetStartRename(idx, btn) {
@@ -6602,6 +7492,8 @@ function sheetStartRename(idx, btn) {
     const name = inp.value.trim() || s.name;
     _sheets[idx].name = name;
     _rebuildSheetTabs();
+    // If renaming the active sheet, refresh title blocks immediately
+    if (idx === _activeSheetIdx) _refreshTitleBlocks();
   };
   inp.onblur   = finish;
   inp.onkeydown = e => {
@@ -6625,7 +7517,8 @@ function duplicateSheet(srcIdx) {
     name:      src.name + ' (copy)',
     paper:     src.paper,
     landscape: src.landscape,
-    json:      src.json,   // deep enough — JSON string is already serialised
+    json:      src.json,
+    meta:      Object.assign(_blankMeta(), src.meta || {}, { status: 'DRAFT', revision: '', issueDate: '' }),
   };
 
   const newIdx = srcIdx + 1;
@@ -6656,20 +7549,39 @@ function _switchSheet(idx) {
   _activeSheetIdx = idx;
   document.querySelectorAll('.page-tab').forEach((b, i) => b.classList.toggle('active', i === idx));
   _restoreSheet(_sheets[idx]);
+  // Refresh after a tick so canvas has finished restoring
+  setTimeout(_refreshTitleBlocks, 50);
 }
 
 // ── Initialise _sheets from the live canvas (first load) ─────────────────────
+
+function _blankMeta() {
+  return {
+    id:          '',        // sheet number e.g. A-001
+    description: '',        // brief content description
+    scale:       '',        // primary scale e.g. 1:100
+    status:      'DRAFT',   // DRAFT | FOR REVIEW | FOR CONSTRUCTION | FOR CONSENT | AS-BUILT | SUPERSEDED
+    revision:    '',        // A, B, C…
+    issueDate:   '',        // date last issued
+    drawnBy:     '',        // person/org
+    checkedBy:   '',        // checker
+    purpose:     '',        // Consent | Construction | As-built
+    discipline:  '',        // Architecture | Structure | Services
+  };
+}
+
 function _initSheetsFromCanvas() {
   const json = canvas.toJSON(CUSTOM_PROPS);
   _sheets = [{
     id: 'sheet-0', name: 'Page 1',
     paper: paperKey, landscape: landscape, json,
+    meta: _blankMeta(),
   }];
 }
 
 // ── IndexedDB ─────────────────────────────────────────────────────────────────
 const DB_NAME    = 'dasu-print';
-const DB_VERSION = 1;
+const DB_VERSION = 3;
 let _db = null;
 
 async function _openDB() {
@@ -6681,6 +7593,7 @@ async function _openDB() {
       if (!db.objectStoreNames.contains('autosave'))  db.createObjectStore('autosave');
       if (!db.objectStoreNames.contains('recent'))    db.createObjectStore('recent',    { keyPath: 'id' });
       if (!db.objectStoreNames.contains('templates')) db.createObjectStore('templates', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('assets'))    db.createObjectStore('assets',    { keyPath: 'id' });
     };
     req.onsuccess  = e => { _db = e.target.result; res(_db); };
     req.onerror    = e => rej(e);
@@ -6690,9 +7603,16 @@ async function _openDB() {
 async function _dbSet(store, key, value) {
   const db = await _openDB();
   return new Promise((res, rej) => {
-    const tx = db.transaction(store, 'readwrite');
-    tx.objectStore(store).put(value, key);
-    tx.oncomplete = res; tx.onerror = rej;
+    const tx  = db.transaction(store, 'readwrite');
+    const os  = tx.objectStore(store);
+    // If store has a keyPath, the key is embedded in value — don't pass it separately
+    if (os.keyPath) {
+      os.put(value);
+    } else {
+      os.put(value, key);
+    }
+    tx.oncomplete = res;
+    tx.onerror    = e => { console.error('_dbSet error', store, e); rej(e); };
   });
 }
 async function _dbGet(store, key) {
@@ -7139,8 +8059,9 @@ async function _fileSystemInit() {
   await _openDB();
   _hookAutosave();
   _initSheetsFromCanvas();
-  _rebuildSheetTabs();   // replace hardcoded HTML tab with properly wired one
-  _loadDimStyles();      // load saved dim styles
+  _rebuildSheetTabs();
+  _loadDimStyles();
+  _initAssetLibrary();   // load user assets into dropdown
 
   // Check for autosave
   const hasAutosave = await _checkAutosave();
