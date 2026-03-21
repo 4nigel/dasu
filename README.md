@@ -15,7 +15,7 @@ Dasu is a **single HTML file** that runs entirely in your browser. No install. N
 
 ## Confession
 
-I am using Claude AI to do this project, I had an idea of what I wanted the app to look like and how it should work but no idea how to write the HTML. 
+> I am using Claude AI to do this project, I had an idea of what I wanted the app to look like and how it should work but no idea how to write the HTML. 
 ---
 
 ## Quick Start
