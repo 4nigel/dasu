@@ -4416,27 +4416,54 @@ function _parseSvgDimMm(attr) {
 }
 
 function _placeSvgOnSheet(svgStr, name, scaleDenom, targetWpx, targetHpx) {
-  const _el = new DOMParser().parseFromString(svgStr, 'image/svg+xml').documentElement;
-
-  // ── Read authoritative values from SVG line 1 ─────────────────────────────
-  // Bonsai writes width and height in mm and data-scale as "1:NNN".
-  // These override everything — Fabric's computed size, anything sent by Blender.
-  const declWmm   = _parseSvgDimMm(_el.getAttribute('width'));   // e.g. 150mm
-  const declHmm   = _parseSvgDimMm(_el.getAttribute('height'));  // e.g. 100mm
-  const dataScale = _el.getAttribute('data-scale');               // e.g. "1:100"
-
+  // Read authoritative size/scale from the SVG itself (Bonsai writes mm + data-scale)
+  const _el     = new DOMParser().parseFromString(svgStr, 'image/svg+xml').documentElement;
+  const declWmm = _parseSvgDimMm(_el.getAttribute('width'));
+  const declHmm = _parseSvgDimMm(_el.getAttribute('height'));
+  const dataScale = _el.getAttribute('data-scale');
   if (dataScale && dataScale.includes(':')) {
     const parsed = parseInt(dataScale.split(':')[1]);
     if (!isNaN(parsed)) scaleDenom = parsed;
   }
+  // Override passed-in target size when SVG declares explicit mm dimensions
+  if (declWmm > 0) targetWpx = declWmm * R;
+  if (declHmm > 0) targetHpx = declHmm * R;
 
+  // Use blob URL — avoids Fabric.js SVG parser hanging on complex Bonsai SVGs
+  try {
+    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+    const url  = URL.createObjectURL(blob);
+    fabric.Image.fromURL(url, (img) => {
+      URL.revokeObjectURL(url);
+      if (!img || !img.width) {
+        console.error('[Dasu] Blob image load failed, trying loadSVGFromString');
+        _placeSvgFabric(svgStr, name, scaleDenom, declWmm, targetWpx, targetHpx);
+        return;
+      }
+      const { wPx, hPx } = sheetDim();
+      const sc = Math.min(targetWpx / img.width, targetHpx / img.height) || 1;
+      img.set({ scaleX: sc, scaleY: sc,
+                left: (wPx - img.getScaledWidth())  / 2,
+                top:  (hPx - img.getScaledHeight()) / 2,
+                _annotType: 'drawing', _fromBridge: true, _fileName: name,
+                _drawingScale: scaleDenom, _rawSvg: svgStr, _isBonsaiSvg: true });
+      canvas.add(img);
+      canvas.setActiveObject(img);
+      canvas.requestRenderAll();
+      syncProps(img);
+      _showBridgeToast(name, scaleDenom, null);
+    }, { crossOrigin: 'anonymous' });
+  } catch(e) {
+    console.error('[Dasu] Blob approach error:', e);
+    _placeSvgFabric(svgStr, name, scaleDenom, declWmm, targetWpx, targetHpx);
+  }
+}
+
+function _placeSvgFabric(svgStr, name, scaleDenom, declWmm, targetWpx, targetHpx) {
   fabric.loadSVGFromString(svgStr, (objs, opts) => {
-    if (!objs || objs.length === 0) return;
+    if (!objs || objs.length === 0) { console.error('[Dasu] Fabric SVG parse returned 0 objects'); return; }
     const grp = fabric.util.groupSVGElements(objs, opts);
 
-    // Force element to exactly the declared mm size.
-    // sc corrects whatever internal scale Fabric applied when loading the SVG.
-    // After this: grp.getScaledWidth() = declWmm × R canvas px = declWmm mm on sheet.
     if (declWmm > 0 && grp.width > 0) {
       const sc = (declWmm * R) / grp.width;
       grp.set({ scaleX: sc, scaleY: sc });

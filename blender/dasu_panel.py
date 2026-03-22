@@ -424,8 +424,7 @@ class DASU_OT_send_drawing(bpy.types.Operator):
             svg_path = override
             print(f'  Dasu: using manual SVG override: {svg_path}')
         else:
-            if drawing_tool and camera_entity:
-                svg_path = _get_svg_path(drawing_tool, camera_entity)
+            svg_path = _get_svg_path(drawing_tool, camera_entity)
 
         if not svg_path or not os.path.isfile(svg_path):
             # Print diagnostic info to Blender console
@@ -507,7 +506,7 @@ class DASU_OT_send_drawing(bpy.types.Operator):
                 headers = {'Content-Type': 'application/json; charset=utf-8'},
                 method  = 'POST',
             )
-            with urllib.request.urlopen(req, timeout=5) as resp:
+            with urllib.request.urlopen(req, timeout=30) as resp:
                 result = json.loads(resp.read().decode('utf-8'))
                 if result.get('ok'):
                     self.report({'INFO'},
@@ -517,6 +516,14 @@ class DASU_OT_send_drawing(bpy.types.Operator):
                     self.report({'ERROR'}, f'Bridge returned error: {result}')
                     return {'CANCELLED'}
 
+        except urllib.error.HTTPError as e:
+            body = ''
+            try:
+                body = e.read().decode('utf-8', errors='replace')[:300]
+            except Exception:
+                pass
+            self.report({'ERROR'}, f'Bridge error {e.code}: {body or e.reason}')
+            return {'CANCELLED'}
         except urllib.error.URLError as e:
             self.report({'ERROR'},
                 f'Could not reach Dasu bridge on port {port}.\n'
@@ -572,9 +579,24 @@ class DASU_OT_diagnose(bpy.types.Operator):
             methods = [m for m in dir(drawing_tool) if 'uri' in m.lower() or 'path' in m.lower() or 'svg' in m.lower()]
             print(f'  Relevant methods: {methods}')
 
+        # Manual drawings dir set in Dasu panel
+        manual_dir = getattr(context.scene, 'dasu_drawings_dir', '').strip()
+        print(f'\n  dasu_drawings_dir (panel): {manual_dir or "(not set)"}')
+        if manual_dir:
+            exists = os.path.isdir(manual_dir)
+            print(f'  dasu_drawings_dir exists: {exists}')
+            if exists:
+                try:
+                    svgs = [f for f in os.listdir(manual_dir) if f.lower().endswith('.svg')]
+                    print(f'  SVG files in dasu_drawings_dir: {len(svgs)}')
+                    for f in svgs[:10]:
+                        print(f'    {f}')
+                except Exception as e:
+                    print(f'  Error listing dir: {e}')
+
         # Bonsai prefs drawings dir
         bonsai_dir = _get_bonsai_drawings_dir()
-        print(f'\n  Bonsai drawings dir: {bonsai_dir}')
+        print(f'\n  Bonsai drawings dir (prefs): {bonsai_dir}')
         if bonsai_dir and os.path.isdir(bonsai_dir):
             files = sorted(os.listdir(bonsai_dir))
             print(f'  Files in drawings dir ({len(files)}):')

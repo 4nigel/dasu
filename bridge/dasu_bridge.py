@@ -14,10 +14,16 @@ No external dependencies — pure Python 3.6+ stdlib.
 """
 
 import json
+import os
+import sys
 import time
 import threading
+import traceback
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse
+
+# Force line-buffered output so Git Bash / MINGW shows prints immediately
+sys.stdout.reconfigure(line_buffering=True)
 
 # ── State ─────────────────────────────────────────────────────────────────────
 _lock     = threading.Lock()
@@ -99,12 +105,13 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 while len(_drawings) > _max_keep:
                     _drawings.pop(0)
 
-            print(f'\n  ✓  Received: {drawing["name"]}  scale={drawing["scale"]}')
+            print(f'\n  OK  Received: {drawing["name"]}  scale={drawing["scale"]}')
             self._json_response(200, {'ok': True, 'id': drawing['id']})
 
         except json.JSONDecodeError as e:
             self._json_response(400, {'error': f'Invalid JSON: {e}'})
         except Exception as e:
+            traceback.print_exc()
             self._json_response(500, {'error': str(e)})
 
     # ── /install-package ──────────────────────────────────────────────────────
@@ -134,7 +141,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
             )
             output = result.stdout + result.stderr
             ok     = result.returncode == 0
-            print(f'  {"✓" if ok else "✗"}  pip install {package} returned {result.returncode}')
+            print(f'  {"OK" if ok else "FAIL"}  pip install {package} returned {result.returncode}')
 
             self._json_response(200, {
                 'ok':         ok,
@@ -306,7 +313,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     'frozen':     fr,
                 })
 
-            print(f'\n  ✓  DXF converted: {filename}  ({len(layers)} layers)')
+            print(f'\n  OK  DXF converted: {filename}  ({len(layers)} layers)')
             self._json_response(200, {
                 'ok':      True,
                 'svg':     svg_str,
@@ -356,8 +363,26 @@ class BridgeHandler(BaseHTTPRequestHandler):
             'version':  '0.1.0',
         })
 
-    # ── / info page ───────────────────────────────────────────────────────────
+    # ── / — serve dasu.html if present, else show info page ───────────────────
     def _info(self):
+        # Look for dasu.html next to this script, or one directory up
+        here     = os.path.dirname(os.path.abspath(__file__))
+        candidates = [
+            os.path.join(here, 'dasu.html'),
+            os.path.join(here, '..', 'dasu.html'),
+        ]
+        app_path = next((p for p in candidates if os.path.isfile(p)), None)
+        if app_path:
+            with open(app_path, 'r', encoding='utf-8') as f:
+                html = f.read()
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html; charset=utf-8')
+            self._cors()
+            self.end_headers()
+            self.wfile.write(html.encode('utf-8'))
+            return
+
+        # Fallback info page when dasu.html is not found
         html = f'''<!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <title>Dasu Bridge</title>
