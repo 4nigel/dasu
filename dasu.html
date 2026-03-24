@@ -118,6 +118,8 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
 .page-tab { background: none; border: none; border-right: 1px solid var(--bdr); color: var(--txt2); padding: 0 14px; height: 100%; cursor: pointer; font-size: 12px; font-family: var(--sans); white-space: nowrap; }
 .page-tab.active { color: var(--txt); background: var(--surf2); }
 .page-tab:hover { color: var(--txt); }
+.page-tab.dragging { opacity: 0.4; cursor: grabbing; }
+.page-tab.drag-over { border-left: 2px solid var(--accent); background: var(--surf2); color: var(--txt); }
 .status-info { display: flex; gap: 14px; padding: 0 14px; font-family: var(--mono); font-size: 11px; color: var(--txt2); flex-shrink: 0; border-left: 1px solid var(--bdr); }
 
 /* ── Annotation control extras ── */
@@ -284,6 +286,9 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
         <div class="dd-sep"></div>
         <div class="dd-item" onclick="exportPDF();closeMenus()"><span>Export PDF</span><span class="dd-shortcut">Ctrl Shift E</span></div>
         <div class="dd-item" onclick="exportSVG();closeMenus()"><span>Export SVG</span></div>
+        <div class="dd-item" onclick="exportPng();closeMenus()"><span>Export PNG…</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item" onclick="copySheetAsPng();closeMenus()"><span>Copy sheet as PNG</span><span class="dd-shortcut">Ctrl Shift C</span></div>
         <div class="dd-sep"></div>
         <div class="dd-item" onclick="window.print();closeMenus()"><span>Print…</span><span class="dd-shortcut">Ctrl P</span></div>
       </div>
@@ -703,9 +708,22 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
         <div class="pref-row">
           <div><div class="pref-row-lbl">Import</div></div>
           <div class="pref-ctrl">
-            <select class="pref-sel" id="pdf-import-mode">
+            <select class="pref-sel" id="pdf-import-mode" onchange="_pdfModeChanged()">
               <option value="selected">Selected pages only</option>
               <option value="all">All pages</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pref-row" id="pdf-one-per-sheet-row">
+          <div>
+            <div class="pref-row-lbl">Page placement</div>
+            <div class="pref-row-sub">One page per sheet creates new sheets automatically</div>
+          </div>
+          <div class="pref-ctrl">
+            <select class="pref-sel" id="pdf-placement">
+              <option value="current">All pages on current sheet</option>
+              <option value="per-sheet">One page per sheet</option>
             </select>
           </div>
         </div>
@@ -1041,6 +1059,38 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
     </div>
   </div>
 
+  <!-- Export PNG Modal -->
+  <div class="modal-overlay" id="modal-export-png" onclick="closeOnOverlay(event,'modal-export-png')">
+    <div class="modal" style="max-width:380px">
+      <div class="modal-hdr">
+        <h2>Export PNG</h2>
+        <button class="modal-close" onclick="closeModal('modal-export-png')">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size:12px;color:var(--txt2);margin-bottom:16px">
+          Choose resolution. On your Surface Pro screen resolution is already
+          <strong id="png-dpr-label">2×</strong> physical pixels.
+        </div>
+        <div class="pref-row">
+          <div><div class="pref-row-lbl">Resolution</div>
+          <div class="pref-row-sub" id="png-size-hint">calculating…</div></div>
+          <div class="pref-ctrl">
+            <select class="pref-sel" id="png-multiplier" onchange="_updatePngHint()">
+              <option value="1">1× screen</option>
+              <option value="2" selected>2× — recommended</option>
+              <option value="3">3× — high quality</option>
+              <option value="4">4× — print quality</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="m-btn" onclick="closeModal('modal-export-png')">Cancel</button>
+        <button class="m-btn primary" onclick="exportPng(parseFloat(document.getElementById('png-multiplier').value))">Export PNG</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Asset Library Modal -->
   <div class="modal-overlay" id="modal-assets" onclick="closeOnOverlay(event,'modal-assets')">
     <div class="modal wide">
@@ -1205,6 +1255,8 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
         <div class="out-ttl">Outputs</div>
         <button class="out-btn primary" onclick="exportPDF()">⬇ Export PDF</button>
         <button class="out-btn" onclick="exportSVG()">⬇ Export SVG</button>
+        <button class="out-btn" onclick="exportPng()">⬇ Export PNG…</button>
+        <button class="out-btn" onclick="copySheetAsPng()">⎘ Copy PNG</button>
         <button class="out-btn" onclick="window.print()">⎙ Print</button>
       </div>
     </div>
@@ -2866,17 +2918,18 @@ function loadFile(file, pos) {
     reader.readAsDataURL(file);
   } else if (ext === 'svg') {
     reader.onload = ev => {
-      const svgStr = ev.target.result;
+      const rawSvg  = ev.target.result;
+      const svgStr  = _resolveTokensInSvg(rawSvg);  // resolve {{tokens}} before Fabric loads
       fabric.loadSVGFromString(svgStr, (objs, opts) => {
         if (!objs || !objs.length) return;
         const grp = fabric.util.groupSVGElements(objs, opts);
 
         grp._fileName  = file.name;
-        grp._rawSvg    = svgStr;
+        grp._rawSvg    = rawSvg;     // keep unresolved original for re-render on sheet switch
         grp._annotType = 'drawing';
 
         // ── Read authoritative values from SVG line 1 ─────────────────────
-        const _el       = new DOMParser().parseFromString(svgStr, 'image/svg+xml').documentElement;
+        const _el       = new DOMParser().parseFromString(rawSvg, 'image/svg+xml').documentElement;
         const declWmm   = _parseSvgDimMm(_el.getAttribute('width'));
         const dataScale = _el.getAttribute('data-scale');
 
@@ -2889,9 +2942,11 @@ function loadFile(file, pos) {
           }
         }
 
-        // ifc: namespace detection
-        if (svgStr.includes('xmlns:ifc=') || svgStr.includes('ifc:')) {
-          grp._isBonsaiSvg = true;
+        // ifc: or dasu: namespace — mark as smart SVG for title block refresh
+        if (rawSvg.includes('xmlns:ifc=') || rawSvg.includes('ifc:') ||
+            rawSvg.includes('xmlns:dasu=') || rawSvg.includes('data-dasu-token')) {
+          grp._isBonsaiSvg  = true;
+          grp._isTitleBlock = true;  // participates in _refreshTitleBlocks on sheet switch
         }
 
         // Force to declared mm size
@@ -2980,12 +3035,19 @@ async function loadPdfFile(file, pos) {
   }
 }
 
+function _pdfModeChanged() {
+  // 'Selected pages only' with one-per-sheet doesn't make much sense
+  // for a single page — still allow it but no special handling needed
+}
+
 async function execPdfImport() {
   if (!_pdfDoc) return;
 
-  const mode       = document.getElementById('pdf-import-mode').value;
-  const scale      = parseInt(document.getElementById('pdf-res').value) || 2;
-  const numPages   = _pdfDoc.numPages;
+  const mode      = document.getElementById('pdf-import-mode').value;
+  const scale     = parseInt(document.getElementById('pdf-res').value) || 2;
+  const placement = document.getElementById('pdf-placement').value;
+  const numPages  = _pdfDoc.numPages;
+
   const pagesToLoad = mode === 'all'
     ? Array.from({ length: numPages }, (_, i) => i + 1)
     : Array.from(_pdfSelected).sort((a, b) => a - b);
@@ -2995,6 +3057,91 @@ async function execPdfImport() {
     return;
   }
 
+  // ── One page per sheet ───────────────────────────────────────────────────
+  if (placement === 'per-sheet') {
+    const existingSheets = _sheets.length;
+    const newSheetsNeeded = pagesToLoad.length - existingSheets;
+
+    // Warn if more than one new sheet needs creating
+    if (newSheetsNeeded > 0) {
+      const msg = newSheetsNeeded === 1
+        ? `This will add 1 new sheet. Continue?`
+        : `This will add ${newSheetsNeeded} new sheet${newSheetsNeeded > 1 ? 's' : ''}. Continue?`;
+      if (!confirm(msg)) return;
+    }
+
+    closeModal('modal-pdf');
+
+    // Create any needed sheets first (preserve existing sheets)
+    for (let i = 0; i < newSheetsNeeded; i++) {
+      const newIdx = _sheets.length;
+      _sheets.push({
+        id:        `sheet-${Date.now()}-${newIdx}`,
+        name:      `Page ${newIdx + 1}`,
+        paper:     _sheets[0].paper,
+        landscape: _sheets[0].landscape,
+        json:      null,
+        meta:      _blankMeta(),
+      });
+      _rebuildSheetTabs();
+    }
+
+    // Place each page onto its corresponding sheet
+    const startIdx = _activeSheetIdx;  // first page goes on current sheet
+
+    for (let i = 0; i < pagesToLoad.length; i++) {
+      const pageNum   = pagesToLoad[i];
+      const targetIdx = startIdx + i;
+
+      // Switch to the target sheet and save current first
+      if (i > 0) {
+        _saveCurrentSheet();
+        _activeSheetIdx = targetIdx;
+        _loadSheet(targetIdx);
+        _rebuildSheetTabs();
+        // Give Fabric a moment to settle before placing
+        await new Promise(r => setTimeout(r, 80));
+      }
+
+      // Render the PDF page
+      const page     = await _pdfDoc.getPage(pageNum);
+      const viewport = page.getViewport({ scale });
+      const cvs      = document.createElement('canvas');
+      cvs.width      = viewport.width;
+      cvs.height     = viewport.height;
+      await page.render({ canvasContext: cvs.getContext('2d'), viewport }).promise;
+
+      const dataUrl = cvs.toDataURL('image/png');
+      const { wPx }  = sheetDim();
+
+      await new Promise(resolve => {
+        fabric.Image.fromURL(dataUrl, img => {
+          if (img.width > wPx * 0.8) img.scale((wPx * 0.8) / img.width);
+          centerObj(img);
+          img._fileName = `page-${pageNum}`;
+          img._pdfPage  = pageNum;
+          canvas.add(img);
+          canvas.setActiveObject(img);
+          canvas.requestRenderAll();
+          resolve();
+        });
+      });
+
+      // Auto-name the sheet from the PDF filename + page number
+      const baseName = (_pdfDoc._pdfInfo?.filename || document.getElementById('pdf-filename').textContent || 'PDF')
+        .replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ').trim();
+      _sheets[targetIdx].name = pagesToLoad.length === 1
+        ? baseName
+        : `${baseName} p.${pageNum}`;
+      _rebuildSheetTabs();
+    }
+
+    // Save last sheet state
+    _saveCurrentSheet();
+    return;
+  }
+
+  // ── All pages on current sheet (original behaviour) ───────────────────────
   closeModal('modal-pdf');
 
   const { wPx } = sheetDim();
@@ -3011,14 +3158,12 @@ async function execPdfImport() {
 
     await new Promise(resolve => {
       fabric.Image.fromURL(dataUrl, img => {
-        // Scale to fit 80% of sheet width if too large
         if (img.width > wPx * 0.8) img.scale((wPx * 0.8) / img.width);
 
         if (_pdfPos) {
           img.set({ left: _pdfPos.x, top: _pdfPos.y });
         } else {
           centerObj(img);
-          // Offset each page slightly so they don't stack exactly
           img.set({
             left: img.left + (pageNum - 1) * 20,
             top:  img.top  + (pageNum - 1) * 20,
@@ -3035,7 +3180,93 @@ async function execPdfImport() {
   }
 }
 
-// ── DXF Import ────────────────────────────────────────────────────────────────
+function _updatePngHint() {
+  const mult  = parseFloat(document.getElementById('png-multiplier').value) || 2;
+  const sr    = sheetRect;
+  const zoom  = canvas.getZoom();
+  const w     = Math.round(sr.width  * zoom * sr.scaleX * mult);
+  const h     = Math.round(sr.height * zoom * sr.scaleY * mult);
+  const dpr   = window.devicePixelRatio || 1;
+  document.getElementById('png-dpr-label').textContent = dpr + '×';
+  document.getElementById('png-size-hint').textContent = `${w} × ${h} px`;
+}
+
+// ── PNG output ────────────────────────────────────────────────────────────────
+
+// Copy sheet as PNG to clipboard at current device pixel ratio — instant.
+async function copySheetAsPng() {
+  try {
+    // Temporarily hide selection handles and grid
+    const activeObj = canvas.getActiveObject();
+    canvas.discardActiveObject();
+    const gridWas = canvas.renderOnAddRemove;
+
+    // Render the sheet area only — clip to sheet rect bounds
+    const sr   = sheetRect;
+    const zoom = canvas.getZoom();
+    const dpr  = window.devicePixelRatio || 1;
+
+    const dataUrl = canvas.toDataURL({
+      format:     'png',
+      left:       sr.left   * zoom,
+      top:        sr.top    * zoom,
+      width:      sr.width  * zoom * sr.scaleX,
+      height:     sr.height * zoom * sr.scaleY,
+      multiplier: dpr,
+    });
+
+    // Restore selection
+    if (activeObj) { canvas.setActiveObject(activeObj); canvas.requestRenderAll(); }
+
+    // Write to clipboard
+    const res  = await fetch(dataUrl);
+    const blob = await res.blob();
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+
+    showToast(`Copied to clipboard  ·  ${Math.round(sr.width * zoom * dpr * sr.scaleX)}×${Math.round(sr.height * zoom * dpr * sr.scaleY)} px`);
+  } catch(e) {
+    console.error('Copy PNG failed:', e);
+    alert('Could not copy to clipboard. Check browser permissions for clipboard access.');
+  }
+}
+
+// Export PNG as a file download with configurable multiplier.
+async function exportPng(multiplier) {
+  if (!multiplier) {
+    // Show resolution picker
+    _updatePngHint();
+    openModal('modal-export-png');
+    return;
+  }
+
+  closeModal('modal-export-png');
+
+  const sr      = sheetRect;
+  const zoom    = canvas.getZoom();
+  const activeObj = canvas.getActiveObject();
+  canvas.discardActiveObject();
+
+  const dataUrl = canvas.toDataURL({
+    format:     'png',
+    left:       sr.left   * zoom,
+    top:        sr.top    * zoom,
+    width:      sr.width  * zoom * sr.scaleX,
+    height:     sr.height * zoom * sr.scaleY,
+    multiplier,
+  });
+
+  if (activeObj) { canvas.setActiveObject(activeObj); canvas.requestRenderAll(); }
+
+  const w   = Math.round(sr.width  * zoom * sr.scaleX * multiplier);
+  const h   = Math.round(sr.height * zoom * sr.scaleY * multiplier);
+  const a   = document.createElement('a');
+  const name = (_sheets[_activeSheetIdx]?.name || 'sheet').replace(/[^a-z0-9_-]/gi, '_');
+  a.download = `${name}_${w}x${h}.png`;
+  a.href     = dataUrl;
+  a.click();
+
+  showToast(`Exported PNG  ·  ${w}×${h} px`);
+}
 
 let _dxfFile     = null;   // the selected File object
 let _dxfLayers   = [];     // layer list returned from bridge after conversion
@@ -4235,35 +4466,47 @@ function _resolveTokens(text) {
 
   const tokens = {
     // ── Bonsai IfcDocumentInformation ─────────────────────────────────────
-    'Identification':     meta.id          || tbc,
-    'Name':               s.name           || tbc,
-    'Description':        meta.description || tbc,
-    'Revision':           meta.revision    || tbc,
-    'Status':             meta.status      || 'DRAFT',
-    'Purpose':            meta.purpose     || tbc,
-    'IntendedUse':        meta.intendedUse || tbc,
-    'Scope':              meta.scope       || tbc,
-    'LastRevisionTime':   meta.issueDate   || tbc,
-    'ValidFrom':          meta.validFrom   || tbc,
-    'ValidUntil':         meta.validUntil  || tbc,
-    // ── Bonsai view-title (drawing reference + sheet) ─────────────────────
-    'Scale':              activeScale      || tbc,
-    'SheetName':          s.name           || tbc,
-    'SheetIdentification':meta.id          || tbc,
-    'SheetRevision':      meta.revision    || tbc,
+    // Unprefixed — used in view-title templates (sheeter.py passes these
+    // for the drawing reference: Name, Identification, Scale)
+    'Identification':          meta.id          || tbc,
+    'Name':                    s.name           || tbc,
+    'Description':             meta.description || tbc,
+    'Revision':                meta.revision    || tbc,
+    'Status':                  meta.status      || 'DRAFT',
+    'Purpose':                 meta.purpose     || tbc,
+    'IntendedUse':             meta.intendedUse || tbc,
+    'Scope':                   meta.scope       || tbc,
+    'LastRevisionTime':        meta.issueDate   || tbc,
+    'ValidFrom':               meta.validFrom   || tbc,
+    'ValidUntil':              meta.validUntil  || tbc,
+    // ── Bonsai Sheet-prefixed — used in titleblock templates ──────────────
+    // sheeter.py builds these via {"Sheet" + k: v for k, v in sheet.get_info().items()}
+    'SheetName':               s.name           || tbc,
+    'SheetIdentification':     meta.id          || tbc,
+    'SheetDescription':        meta.description || tbc,
+    'SheetRevision':           meta.revision    || tbc,
+    'SheetStatus':             meta.status      || 'DRAFT',
+    'SheetPurpose':            meta.purpose     || tbc,
+    'SheetLastRevisionTime':   meta.issueDate   || tbc,
+    'SheetIntendedUse':        meta.intendedUse || tbc,
+    'SheetScope':              meta.scope       || tbc,
+    'SheetValidFrom':          meta.validFrom   || tbc,
+    'SheetValidUntil':         meta.validUntil  || tbc,
+    // ── Bonsai Scale — from EPset_Drawing.HumanScale ─────────────────────
+    'Scale':                   activeScale      || tbc,
     // ── Dasu additional ───────────────────────────────────────────────────
-    'ProjectName':        bm.projectName    || tbc,
-    'ProjectNumber':      bm.projectNumber  || tbc,
-    'ProjectAddress':     bm.projectAddress || tbc,
-    'SiteName':           bm.siteName       || tbc,
-    'ClientName':         bm.clientName     || tbc,
-    'ArchitectName':      bm.architectName  || tbc,
-    'DrawnBy':            meta.drawnBy      || tbc,
-    'CheckedBy':          meta.checkedBy    || tbc,
-    'IssueDate':          meta.issueDate    || tbc,  // friendly alias of LastRevisionTime
-    'Discipline':         meta.discipline   || tbc,
-    'Date':               date,
-    'Year':               yr,
+    'ProjectName':             bm.projectName    || tbc,
+    'ProjectNumber':           bm.projectNumber  || tbc,
+    'ProjectAddress':          bm.projectAddress || tbc,
+    'SiteName':                bm.siteName       || tbc,
+    'ClientName':              bm.clientName     || tbc,
+    'ArchitectName':           bm.architectName  || tbc,
+    'DrawnBy':                 meta.drawnBy      || tbc,
+    'CheckedBy':               meta.checkedBy    || tbc,
+    'IssueDate':               meta.issueDate    || tbc,  // alias of LastRevisionTime
+    'Discipline':              meta.discipline   || tbc,
+    'Date':                    date,
+    'Year':                    yr,
   };
 
   return text.replace(/\{\{([^}]+)\}\}/g, (_, key) => {
@@ -7434,6 +7677,57 @@ function _rebuildSheetTabs() {
     btn.onclick     = () => _switchSheet(i);
     btn.ondblclick  = (e) => { e.stopPropagation(); sheetStartRename(i, btn); };
     btn.oncontextmenu = (e) => { e.preventDefault(); _showSheetCtxMenu(i, e); };
+
+    // ── Drag-to-reorder ──────────────────────────────────────────────────
+    btn.draggable = true;
+
+    btn.ondragstart = (e) => {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', i);
+      setTimeout(() => btn.classList.add('dragging'), 0);
+    };
+
+    btn.ondragend = () => {
+      btn.classList.remove('dragging');
+      document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('drag-over'));
+    };
+
+    btn.ondragover = (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('drag-over'));
+      btn.classList.add('drag-over');
+    };
+
+    btn.ondragleave = () => btn.classList.remove('drag-over');
+
+    btn.ondrop = (e) => {
+      e.preventDefault();
+      btn.classList.remove('drag-over');
+      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+      const toIdx   = parseInt(btn.dataset.idx);
+      if (fromIdx === toIdx) return;
+
+      // Save current sheet before reordering
+      _saveCurrentSheet();
+
+      // Reorder _sheets array
+      const moved = _sheets.splice(fromIdx, 1)[0];
+      _sheets.splice(toIdx, 0, moved);
+
+      // Keep active sheet pointing to the same sheet after reorder
+      if (_activeSheetIdx === fromIdx) {
+        _activeSheetIdx = toIdx;
+      } else if (fromIdx < _activeSheetIdx && toIdx >= _activeSheetIdx) {
+        _activeSheetIdx--;
+      } else if (fromIdx > _activeSheetIdx && toIdx <= _activeSheetIdx) {
+        _activeSheetIdx++;
+      }
+
+      _rebuildSheetTabs();
+      _refreshTitleBlocks();
+    };
+
     tabs.appendChild(btn);
   });
 }
@@ -8279,6 +8573,7 @@ document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'o') { e.preventDefault(); cmdOpen(); }
   if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 's') { e.preventDefault(); cmdSave(); }
   if ((e.ctrlKey || e.metaKey) && e.shiftKey  && e.key === 'S') { e.preventDefault(); cmdSaveAs(); }
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey  && (e.key === 'C' || e.key === 'c')) { e.preventDefault(); copySheetAsPng(); }
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
