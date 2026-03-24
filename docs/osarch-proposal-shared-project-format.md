@@ -1,5 +1,3 @@
-
-
 # Proposal: A Shared Open Project Format for Bonsai and Dasu
 
 
@@ -258,6 +256,12 @@ Sheet names, paper sizes, positions, scales — all absent here because they liv
 
 **Should `.dasu/canvas.json` be committed to git?** Yes, by default. It contains layout decisions that affect what everyone sees on the sheet — it is not the same as `.vscode/` which is truly personal. Teams can choose to gitignore it if they prefer local-only canvas state.
 
+### Browser access strategy
+
+The bridge is the primary I/O layer for Path 2 — it handles all filesystem reads and writes on behalf of the browser, with no special permissions required. For users on Chrome/Edge without IT restrictions, `showDirectoryPicker()` provides the same capability natively.
+
+One additional option worth implementing: `webkitdirectory` (a standard HTML directory picker attribute) as a read-only fallback for locked-down machines without the bridge. It requires no special permissions and works on any browser — it would let someone open a Bonsai project folder in Dasu and work with its drawings, just not save changes back to the folder directly. For those users, saving would fall back to downloading a `.bprint` file.
+
 ### Sheets are a build artefact
 
 The `sheets/` directory is the compiled output of `SheetBuilder.build()`. Neither Dasu nor the user edits it directly. It is produced from `layouts/` on demand — either by Bonsai's "Build Sheet" operator, or triggered by Dasu via the bridge server. `sheets/` should go in `.gitignore`, the same way compiled build output does in software projects.
@@ -330,7 +334,8 @@ The honest sequencing, with no items marked done prematurely:
 | **Layout SVG read** | Parse `layouts/*.svg` to reconstruct sheet canvas from Bonsai-placed drawings | Near term |
 | **`dasu-overlay` write** | Write Dasu annotations into `<g data-type="dasu-overlay">` group in layout SVG | Near term |
 | **`.bprint` migration tool** | Convert existing `.bprint` files to folder format via bridge | Near term |
-| **`showDirectoryPicker()`** | Chrome/Edge native directory access without bridge | Medium term |
+| **`webkitdirectory` read path** | Read-only folder open via directory picker or drag-and-drop — no permissions needed, works on any browser, useful for locked-down machines without the bridge | Near term |
+| **`showDirectoryPicker()`** | Chrome/Edge native read/write directory access without bridge | Medium term |
 | **IFC write-back** | Write sheet positions and paper size back to `model.ifc` via bridge | Later |
 
 #### Token mapping — Dasu → Bonsai
@@ -429,5 +434,3 @@ Feedback and questions welcome.
 ---
 
 *Dasu is free and open-source. Source: [github.com/openingdesign/dasu](https://github.com/openingdesign/dasu)*
-
-
